@@ -15,6 +15,7 @@
  */
 package org.sqlite.core;
 
+import java.lang.foreign.MemorySegment;
 import java.sql.BatchUpdateException;
 import java.sql.SQLException;
 import java.util.HashSet;
@@ -272,15 +273,15 @@ public abstract class DB implements Codes {
      * Destroys a statement.
      *
      * @param safePtr the pointer wrapper to remove from internal structures
-     * @param ptr the raw pointer to free
+     * @param stmt the memory segment to free
      * @return <a href="https://www.sqlite.org/c3ref/c_abort.html">Result Codes</a>
      * @throws SQLException if finalization fails
      * @see <a
      *     href="https://www.sqlite.org/c3ref/finalize.html">https://www.sqlite.org/c3ref/finalize.html</a>
      */
-    public synchronized int finalize(SafeStmtPtr safePtr, long ptr) throws SQLException {
+    public synchronized int finalize(SafeStmtPtr safePtr, MemorySegment stmt) throws SQLException {
         try {
-            return finalize(ptr);
+            return finalize(stmt);
         } finally {
             stmts.remove(safePtr);
         }
@@ -338,7 +339,7 @@ public abstract class DB implements Codes {
      * @see <a
      *     href="https://www.sqlite.org/c3ref/finalize.html">https://www.sqlite.org/c3ref/finalize.html</a>
      */
-    protected abstract int finalize(long stmt) throws SQLException;
+    protected abstract int finalize(MemorySegment stmt) throws SQLException;
 
     /**
      * Evaluates a statement.
@@ -349,7 +350,7 @@ public abstract class DB implements Codes {
      * @see <a
      *     href="https://www.sqlite.org/c3ref/step.html">https://www.sqlite.org/c3ref/step.html</a>
      */
-    public abstract int step(long stmt) throws SQLException;
+    public abstract int step(MemorySegment stmt) throws SQLException;
 
     /**
      * Sets a prepared statement object back to its initial state, ready to be re-executed.
@@ -360,7 +361,7 @@ public abstract class DB implements Codes {
      * @see <a
      *     href="https://www.sqlite.org/c3ref/reset.html">https://www.sqlite.org/c3ref/reset.html</a>
      */
-    public abstract int reset(long stmt) throws SQLException;
+    public abstract int reset(MemorySegment stmt) throws SQLException;
 
     /**
      * Reset all bindings on a prepared statement (reset all host parameters to NULL).
@@ -371,7 +372,7 @@ public abstract class DB implements Codes {
      * @see <a
      *     href="https://www.sqlite.org/c3ref/clear_bindings.html">https://www.sqlite.org/c3ref/clear_bindings.html</a>
      */
-    public abstract int clear_bindings(long stmt) throws SQLException; // TODO remove?
+    public abstract int clear_bindings(MemorySegment stmt) throws SQLException; // TODO remove?
 
     /**
      * @param stmt Pointer to the statement.
@@ -380,7 +381,7 @@ public abstract class DB implements Codes {
      * @see <a
      *     href="https://www.sqlite.org/c3ref/bind_parameter_count.html">https://www.sqlite.org/c3ref/bind_parameter_count.html</a>
      */
-    abstract int bind_parameter_count(long stmt) throws SQLException;
+    abstract int bind_parameter_count(MemorySegment stmt) throws SQLException;
 
     /**
      * @param stmt Pointer to the statement.
@@ -389,7 +390,7 @@ public abstract class DB implements Codes {
      * @see <a
      *     href="https://www.sqlite.org/c3ref/column_count.html">https://www.sqlite.org/c3ref/column_count.html</a>
      */
-    public abstract int column_count(long stmt) throws SQLException;
+    public abstract int column_count(MemorySegment stmt) throws SQLException;
 
     /**
      * @param stmt Pointer to the statement.
@@ -399,7 +400,7 @@ public abstract class DB implements Codes {
      * @see <a
      *     href="https://www.sqlite.org/c3ref/column_blob.html">https://www.sqlite.org/c3ref/column_blob.html</a>
      */
-    public abstract int column_type(long stmt, int col) throws SQLException;
+    public abstract int column_type(MemorySegment stmt, int col) throws SQLException;
 
     /**
      * @param stmt Pointer to the statement.
@@ -409,7 +410,7 @@ public abstract class DB implements Codes {
      * @see <a
      *     href="https://www.sqlite.org/c3ref/column_decltype.html">https://www.sqlite.org/c3ref/column_decltype.html</a>
      */
-    public abstract String column_decltype(long stmt, int col) throws SQLException;
+    public abstract String column_decltype(MemorySegment stmt, int col) throws SQLException;
 
     /**
      * @param stmt Pointer to the statement.
@@ -419,7 +420,7 @@ public abstract class DB implements Codes {
      * @see <a
      *     href="https://www.sqlite.org/c3ref/column_database_name.html">https://www.sqlite.org/c3ref/column_database_name.html</a>
      */
-    public abstract String column_table_name(long stmt, int col) throws SQLException;
+    public abstract String column_table_name(MemorySegment stmt, int col) throws SQLException;
 
     /**
      * @param stmt Pointer to the statement.
@@ -429,7 +430,7 @@ public abstract class DB implements Codes {
      * @see <a
      *     href="https://www.sqlite.org/c3ref/column_name.html">https://www.sqlite.org/c3ref/column_name.html</a>
      */
-    public abstract String column_name(long stmt, int col) throws SQLException;
+    public abstract String column_name(MemorySegment stmt, int col) throws SQLException;
 
     /**
      * @param stmt Pointer to the statement.
@@ -439,7 +440,7 @@ public abstract class DB implements Codes {
      * @see <a
      *     href="https://www.sqlite.org/c3ref/column_blob.html">https://www.sqlite.org/c3ref/column_blob.html</a>
      */
-    public abstract String column_text(long stmt, int col) throws SQLException;
+    public abstract String column_text(MemorySegment stmt, int col) throws SQLException;
 
     /**
      * @param stmt Pointer to the statement.
@@ -449,7 +450,7 @@ public abstract class DB implements Codes {
      * @see <a
      *     href="https://www.sqlite.org/c3ref/column_blob.html">https://www.sqlite.org/c3ref/column_blob.html</a>
      */
-    public abstract byte[] column_blob(long stmt, int col) throws SQLException;
+    public abstract byte[] column_blob(MemorySegment stmt, int col) throws SQLException;
 
     /**
      * @param stmt Pointer to the statement.
@@ -459,7 +460,7 @@ public abstract class DB implements Codes {
      * @see <a
      *     href="https://www.sqlite.org/c3ref/column_blob.html">https://www.sqlite.org/c3ref/column_blob.html</a>
      */
-    public abstract double column_double(long stmt, int col) throws SQLException;
+    public abstract double column_double(MemorySegment stmt, int col) throws SQLException;
 
     /**
      * @param stmt Pointer to the statement.
@@ -469,7 +470,7 @@ public abstract class DB implements Codes {
      * @see <a
      *     href="https://www.sqlite.org/c3ref/column_blob.html">https://www.sqlite.org/c3ref/column_blob.html</a>
      */
-    public abstract long column_long(long stmt, int col) throws SQLException;
+    public abstract long column_long(MemorySegment stmt, int col) throws SQLException;
 
     /**
      * @param stmt Pointer to the statement.
@@ -479,7 +480,7 @@ public abstract class DB implements Codes {
      * @see <a
      *     href="https://www.sqlite.org/c3ref/column_blob.html">https://www.sqlite.org/c3ref/column_blob.html</a>
      */
-    public abstract int column_int(long stmt, int col) throws SQLException;
+    public abstract int column_int(MemorySegment stmt, int col) throws SQLException;
 
     /**
      * Binds NULL value to prepared statements with the pointer to the statement object and the
@@ -490,7 +491,7 @@ public abstract class DB implements Codes {
      * @return <a href="https://www.sqlite.org/c3ref/c_abort.html">Result Codes</a>
      * @throws SQLException
      */
-    abstract int bind_null(long stmt, int pos) throws SQLException;
+    abstract int bind_null(MemorySegment stmt, int pos) throws SQLException;
 
     /**
      * Binds int value to prepared statements with the pointer to the statement object, the index of
@@ -504,7 +505,7 @@ public abstract class DB implements Codes {
      * @see <a
      *     href="https://www.sqlite.org/c3ref/bind_blob.html">https://www.sqlite.org/c3ref/bind_blob.html</a>
      */
-    abstract int bind_int(long stmt, int pos, int v) throws SQLException;
+    abstract int bind_int(MemorySegment stmt, int pos, int v) throws SQLException;
 
     /**
      * Binds long value to prepared statements with the pointer to the statement object, the index
@@ -518,7 +519,7 @@ public abstract class DB implements Codes {
      * @see <a
      *     href="https://www.sqlite.org/c3ref/bind_blob.html">https://www.sqlite.org/c3ref/bind_blob.html</a>
      */
-    abstract int bind_long(long stmt, int pos, long v) throws SQLException;
+    abstract int bind_long(MemorySegment stmt, int pos, long v) throws SQLException;
 
     /**
      * Binds double value to prepared statements with the pointer to the statement object, the index
@@ -532,7 +533,7 @@ public abstract class DB implements Codes {
      * @see <a
      *     href="https://www.sqlite.org/c3ref/bind_blob.html">https://www.sqlite.org/c3ref/bind_blob.html</a>
      */
-    abstract int bind_double(long stmt, int pos, double v) throws SQLException;
+    abstract int bind_double(MemorySegment stmt, int pos, double v) throws SQLException;
 
     /**
      * Binds text value to prepared statements with the pointer to the statement object, the index
@@ -546,7 +547,7 @@ public abstract class DB implements Codes {
      * @see <a
      *     href="https://www.sqlite.org/c3ref/bind_blob.html">https://www.sqlite.org/c3ref/bind_blob.html</a>
      */
-    abstract int bind_text(long stmt, int pos, String v) throws SQLException;
+    abstract int bind_text(MemorySegment stmt, int pos, String v) throws SQLException;
 
     /**
      * Binds blob value to prepared statements with the pointer to the statement object, the index
@@ -560,7 +561,7 @@ public abstract class DB implements Codes {
      * @see <a
      *     href="https://www.sqlite.org/c3ref/bind_blob.html">https://www.sqlite.org/c3ref/bind_blob.html</a>
      */
-    abstract int bind_blob(long stmt, int pos, byte[] v) throws SQLException;
+    abstract int bind_blob(MemorySegment stmt, int pos, byte[] v) throws SQLException;
 
     /**
      * Sets the result of an SQL function as NULL with the pointer to the SQLite database context.
@@ -570,7 +571,7 @@ public abstract class DB implements Codes {
      * @see <a
      *     href="https://www.sqlite.org/c3ref/result_blob.html">https://www.sqlite.org/c3ref/result_blob.html</a>
      */
-    public abstract void result_null(long context) throws SQLException;
+    public abstract void result_null(MemorySegment context) throws SQLException;
 
     /**
      * Sets the result of an SQL function as text data type with the pointer to the SQLite database
@@ -582,7 +583,7 @@ public abstract class DB implements Codes {
      * @see <a
      *     href="https://www.sqlite.org/c3ref/result_blob.html">https://www.sqlite.org/c3ref/result_blob.html</a>
      */
-    public abstract void result_text(long context, String val) throws SQLException;
+    public abstract void result_text(MemorySegment context, String val) throws SQLException;
 
     /**
      * Sets the result of an SQL function as blob data type with the pointer to the SQLite database
@@ -594,7 +595,7 @@ public abstract class DB implements Codes {
      * @see <a
      *     href="https://www.sqlite.org/c3ref/result_blob.html">https://www.sqlite.org/c3ref/result_blob.html</a>
      */
-    public abstract void result_blob(long context, byte[] val) throws SQLException;
+    public abstract void result_blob(MemorySegment context, byte[] val) throws SQLException;
 
     /**
      * Sets the result of an SQL function as double data type with the pointer to the SQLite
@@ -606,7 +607,7 @@ public abstract class DB implements Codes {
      * @see <a
      *     href="https://www.sqlite.org/c3ref/result_blob.html">https://www.sqlite.org/c3ref/result_blob.html</a>
      */
-    public abstract void result_double(long context, double val) throws SQLException;
+    public abstract void result_double(MemorySegment context, double val) throws SQLException;
 
     /**
      * Sets the result of an SQL function as long data type with the pointer to the SQLite database
@@ -618,7 +619,7 @@ public abstract class DB implements Codes {
      * @see <a
      *     href="https://www.sqlite.org/c3ref/result_blob.html">https://www.sqlite.org/c3ref/result_blob.html</a>
      */
-    public abstract void result_long(long context, long val) throws SQLException;
+    public abstract void result_long(MemorySegment context, long val) throws SQLException;
 
     /**
      * Sets the result of an SQL function as int data type with the pointer to the SQLite database
@@ -630,7 +631,7 @@ public abstract class DB implements Codes {
      * @see <a
      *     href="https://www.sqlite.org/c3ref/result_blob.html">https://www.sqlite.org/c3ref/result_blob.html</a>
      */
-    public abstract void result_int(long context, int val) throws SQLException;
+    public abstract void result_int(MemorySegment context, int val) throws SQLException;
 
     /**
      * Sets the result of an SQL function as an error with the pointer to the SQLite database
@@ -642,7 +643,7 @@ public abstract class DB implements Codes {
      * @see <a
      *     href="https://www.sqlite.org/c3ref/result_blob.html">https://www.sqlite.org/c3ref/result_blob.html</a>
      */
-    public abstract void result_error(long context, String err) throws SQLException;
+    public abstract void result_error(MemorySegment context, String err) throws SQLException;
 
     /**
      * @param f SQLite function object.
@@ -847,7 +848,7 @@ public abstract class DB implements Codes {
      *     index[col][2] = true if column is auto-increment.
      * @throws SQLException
      */
-    abstract boolean[][] column_metadata(long stmt) throws SQLException;
+    abstract boolean[][] column_metadata(MemorySegment stmt) throws SQLException;
 
     // COMPOUND FUNCTIONS ////////////////////////////////////////////
 
@@ -858,7 +859,7 @@ public abstract class DB implements Codes {
      * @return String array of column names.
      * @throws SQLException
      */
-    public final synchronized String[] column_names(long stmt) throws SQLException {
+    public final synchronized String[] column_names(MemorySegment stmt) throws SQLException {
         String[] names = new String[column_count(stmt)];
         for (int i = 0; i < names.length; i++) {
             names[i] = column_name(stmt, i);
@@ -877,7 +878,7 @@ public abstract class DB implements Codes {
      * @see <a
      *     href="https://www.sqlite.org/c3ref/bind_blob.html">https://www.sqlite.org/c3ref/bind_blob.html</a>
      */
-    final synchronized int sqlbind(long stmt, int pos, Object v) throws SQLException {
+    final synchronized int sqlbind(MemorySegment stmt, int pos, Object v) throws SQLException {
         pos++;
         if (v == null) {
             return bind_null(stmt, pos);
@@ -917,7 +918,7 @@ public abstract class DB implements Codes {
     }
 
     private synchronized long[] executeBatch(
-            long stmt, int count, Object[] vals, boolean autoCommit) throws SQLException {
+            MemorySegment stmt, int count, Object[] vals, boolean autoCommit) throws SQLException {
         if (count < 1) {
             throw new SQLException("count (" + count + ") < 1");
         }
@@ -989,9 +990,9 @@ public abstract class DB implements Codes {
         }
     }
 
-    private synchronized int execute(long ptr, Object[] vals) throws SQLException {
+    private synchronized int execute(MemorySegment stmt, Object[] vals) throws SQLException {
         if (vals != null) {
-            final int params = bind_parameter_count(ptr);
+            final int params = bind_parameter_count(stmt);
             if (params > vals.length) {
                 throw new SQLException(
                         "assertion failure: param count ("
@@ -1002,15 +1003,15 @@ public abstract class DB implements Codes {
             }
 
             for (int i = 0; i < params; i++) {
-                int rc = sqlbind(ptr, i, vals[i]);
+                int rc = sqlbind(stmt, i, vals[i]);
                 if (rc != SQLITE_OK) {
                     throwex(rc);
                 }
             }
         }
 
-        int statusCode = step(ptr);
-        if ((statusCode & 0xFF) == SQLITE_DONE) reset(ptr);
+        int statusCode = step(stmt);
+        if ((statusCode & 0xFF) == SQLITE_DONE) reset(stmt);
         return statusCode;
     }
 
@@ -1244,7 +1245,7 @@ public abstract class DB implements Codes {
         }
     }
 
-    private void ensureAutocommit(long beginPtr, long commitPtr) throws SQLException {
+    private void ensureAutocommit(MemorySegment beginPtr, MemorySegment commitPtr) throws SQLException {
         try {
             if (step(beginPtr) != SQLITE_DONE) {
                 return; // assume we are in a transaction

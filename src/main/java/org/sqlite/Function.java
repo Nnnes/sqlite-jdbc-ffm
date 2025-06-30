@@ -15,6 +15,8 @@
  */
 package org.sqlite;
 
+import java.lang.foreign.Arena;
+import java.lang.foreign.MemorySegment;
 import java.sql.Connection;
 import java.sql.SQLException;
 import org.sqlite.core.Codes;
@@ -55,9 +57,31 @@ public abstract class Function {
     private SQLiteConnection conn;
     private DB db;
 
-    long context = 0; // pointer sqlite3_context*
-    long value = 0; // pointer sqlite3_value**
+    MemorySegment pContext = MemorySegment.NULL; // pointer sqlite3_context*
+    MemorySegment pValue = MemorySegment.NULL; // pointer sqlite3_value**
     int args = 0;
+
+    public Arena _arena = Arena.ofAuto();
+
+    public void _setContext(MemorySegment pContext) {
+        this.pContext = pContext;
+    }
+
+    public MemorySegment _getValue() {
+        return pValue;
+    }
+
+    public void _setValue(MemorySegment pValue) {
+        this.pValue = pValue;
+    }
+
+    public int _getArgs() {
+        return args;
+    }
+
+    public void _setArgs(int args) {
+        this.args = args;
+    }
 
     /**
      * Registers a given function with the connection.
@@ -145,6 +169,10 @@ public abstract class Function {
      */
     protected abstract void xFunc() throws SQLException;
 
+    public void _xFunc() throws SQLException {
+        xFunc();
+    }
+
     /**
      * Returns the number of arguments passed to the function. Can only be called from
      * <tt>xFunc()</tt>.
@@ -161,7 +189,7 @@ public abstract class Function {
      */
     protected final synchronized void result(byte[] value) throws SQLException {
         checkContext();
-        db.result_blob(context, value);
+        db.result_blob(pContext, value);
     }
 
     /**
@@ -171,7 +199,7 @@ public abstract class Function {
      */
     protected final synchronized void result(double value) throws SQLException {
         checkContext();
-        db.result_double(context, value);
+        db.result_double(pContext, value);
     }
 
     /**
@@ -181,7 +209,7 @@ public abstract class Function {
      */
     protected final synchronized void result(int value) throws SQLException {
         checkContext();
-        db.result_int(context, value);
+        db.result_int(pContext, value);
     }
 
     /**
@@ -191,13 +219,13 @@ public abstract class Function {
      */
     protected final synchronized void result(long value) throws SQLException {
         checkContext();
-        db.result_long(context, value);
+        db.result_long(pContext, value);
     }
 
     /** Called by <tt>xFunc</tt> to return a value. */
     protected final synchronized void result() throws SQLException {
         checkContext();
-        db.result_null(context);
+        db.result_null(pContext);
     }
 
     /**
@@ -207,7 +235,7 @@ public abstract class Function {
      */
     protected final synchronized void result(String value) throws SQLException {
         checkContext();
-        db.result_text(context, value);
+        db.result_text(pContext, value);
     }
 
     /**
@@ -217,7 +245,7 @@ public abstract class Function {
      */
     protected final synchronized void error(String err) throws SQLException {
         checkContext();
-        db.result_error(context, err);
+        db.result_error(pContext, err);
     }
 
     /**
@@ -282,7 +310,7 @@ public abstract class Function {
 
     /** @throws SQLException */
     private void checkContext() throws SQLException {
-        if (conn == null || conn.getDatabase() == null || context == 0) {
+        if (conn == null || conn.getDatabase() == null || pContext.address() == MemorySegment.NULL.address()) {
             throw new SQLException("no context, not allowed to read value");
         }
     }
@@ -292,7 +320,7 @@ public abstract class Function {
      * @throws SQLException
      */
     private void checkValue(int arg) throws SQLException {
-        if (conn == null || conn.getDatabase() == null || value == 0) {
+        if (conn == null || conn.getDatabase() == null || pContext.address() == MemorySegment.NULL.address()) {
             throw new SQLException("not in value access state");
         }
         if (arg >= args) {
@@ -318,6 +346,10 @@ public abstract class Function {
          */
         protected abstract void xStep() throws SQLException;
 
+        public void _xStep() throws SQLException {
+            xStep();
+        }
+
         /**
          * Defines the abstract aggregate callback function
          *
@@ -326,6 +358,10 @@ public abstract class Function {
          *     href="https://www.sqlite.org/c3ref/aggregate_context.html">https://www.sqlite.org/c3ref/aggregate_context.html</a>
          */
         protected abstract void xFinal() throws SQLException;
+
+        public void _xFinal() throws SQLException {
+            xFinal();
+        }
 
         /** @see java.lang.Object#clone() */
         public Object clone() throws CloneNotSupportedException {
@@ -348,6 +384,10 @@ public abstract class Function {
          */
         protected abstract void xInverse() throws SQLException;
 
+        public void _xInverse() throws SQLException {
+            xInverse();
+        }
+
         /**
          * Defines the abstract window callback function
          *
@@ -356,5 +396,9 @@ public abstract class Function {
          *     href="https://www.sqlite.org/windowfunctions.html#user_defined_aggregate_window_functions">https://www.sqlite.org/windowfunctions.html#user_defined_aggregate_window_functions</a>
          */
         protected abstract void xValue() throws SQLException;
+
+        public void _xValue() throws SQLException {
+            xValue();
+        }
     }
 }

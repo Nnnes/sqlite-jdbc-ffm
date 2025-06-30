@@ -38,4 +38,8 @@ public abstract class ProgressHandler {
     }
 
     protected abstract int progress() throws SQLException;
+
+    public int _progress() throws SQLException {
+        return progress();
+    }
 }

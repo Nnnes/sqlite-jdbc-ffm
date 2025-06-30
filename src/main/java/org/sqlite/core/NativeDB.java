@@ -16,7 +16,8 @@
 
 package org.sqlite.core;
 
-import java.nio.ByteBuffer;
+import java.lang.foreign.Arena;
+import java.lang.foreign.MemorySegment;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.text.MessageFormat;
@@ -25,19 +26,21 @@ import org.sqlite.Collation;
 import org.sqlite.Function;
 import org.sqlite.ProgressHandler;
 import org.sqlite.SQLiteConfig;
-import org.sqlite.SQLiteJDBCLoader;
 import org.sqlite.util.Logger;
 import org.sqlite.util.LoggerFactory;
 
-/** This class provides a thin JNI layer over the SQLite3 C API. */
+/// This class interfaces with [NativeDB_c] in the same way as it does with `NativeDB.c` in the original JNI version of
+/// `sqlite-jdbc`.
+///
+/// Conversions between [String]s and UTF-8 `byte[]`s have been replaced with built-in FFM methods such as
+/// [Arena#allocateFrom(java.lang.String)] and [MemorySegment#getString(long, java.nio.charset.Charset)].
 public final class NativeDB extends DB {
     private static final Logger logger = LoggerFactory.getLogger(NativeDB.class);
     private static final int DEFAULT_BACKUP_BUSY_SLEEP_TIME_MILLIS = 100;
     private static final int DEFAULT_BACKUP_NUM_BUSY_BEFORE_FAIL = 3;
     private static final int DEFAULT_PAGES_PER_BACKUP_STEP = 100;
 
-    /** SQLite connection handle. */
-    private long pointer = 0;
+    private final NativeDB_c $this;
 
     private static boolean isLoaded;
     private static boolean loadSucceeded;
@@ -56,6 +59,7 @@ public final class NativeDB extends DB {
 
     public NativeDB(String url, String fileName, SQLiteConfig config) throws SQLException {
         super(url, fileName, config);
+        $this = new NativeDB_c(this);
     }
 
     /**
@@ -63,11 +67,14 @@ public final class NativeDB extends DB {
      *
      * @return True if the SQLite JDBC driver is successfully loaded; false otherwise.
      */
-    public static boolean load() throws Exception {
+    public static boolean load() {
         if (isLoaded) return loadSucceeded;
 
         try {
-            loadSucceeded = SQLiteJDBCLoader.initialize();
+            // TODO: Rewrite SQLiteJDBCLoader instead of relying on the library being loaded in sqlite_h
+            // loadSucceeded = SQLiteJDBCLoader.initialize();
+            System.loadLibrary("sqlite3");
+            loadSucceeded = true;
         } finally {
             isLoaded = true;
         }
@@ -79,14 +86,14 @@ public final class NativeDB extends DB {
     /** @see org.sqlite.core.DB#_open(java.lang.String, int) */
     @Override
     protected synchronized void _open(String file, int openFlags) throws SQLException {
-        _open_utf8(stringToUtf8ByteArray(file), openFlags);
+        $this._open(file, openFlags);
     }
-
-    synchronized native void _open_utf8(byte[] fileUtf8, int openFlags) throws SQLException;
 
     /** @see org.sqlite.core.DB#_close() */
     @Override
-    protected synchronized native void _close() throws SQLException;
+    protected synchronized void _close() throws SQLException {
+        $this._close();
+    }
 
     /** @see org.sqlite.core.DB#_exec(java.lang.String) */
     @Override
@@ -96,33 +103,53 @@ public final class NativeDB extends DB {
                         MessageFormat.format(
                                 "DriverManager [{0}] [SQLite EXEC] {1}",
                                 Thread.currentThread().getName(), sql));
-        return _exec_utf8(stringToUtf8ByteArray(sql));
+        return $this._exec(sql);
     }
-
-    synchronized native int _exec_utf8(byte[] sqlUtf8) throws SQLException;
 
     /** @see org.sqlite.core.DB#shared_cache(boolean) */
     @Override
-    public synchronized native int shared_cache(boolean enable);
+    public synchronized int shared_cache(boolean enable) {
+        return $this.shared_cache(enable);
+    }
 
     /** @see org.sqlite.core.DB#enable_load_extension(boolean) */
     @Override
-    public synchronized native int enable_load_extension(boolean enable);
+    public synchronized int enable_load_extension(boolean enable) {
+        try {
+            return $this.enable_load_extension(enable);
+        } catch (SQLException _) {
+            return SQLITE_MISUSE;
+        }
+    }
 
     /** @see org.sqlite.core.DB#interrupt() */
     @Override
-    public native void interrupt();
+    public void interrupt() {
+        try {
+            $this.interrupt();
+        } catch (SQLException _) {
+        }
+    }
 
     /** @see org.sqlite.core.DB#busy_timeout(int) */
     @Override
-    public synchronized native void busy_timeout(int ms);
+    public synchronized void busy_timeout(int ms) {
+        try {
+            $this.busy_timeout(ms);
+        } catch (SQLException _) {
+        }
+    }
 
-    /** busy handler pointer to JNI global busyhandler reference. */
-    private long busyHandler = 0;
+    Arena busyHandlerArena = null;
 
     /** @see org.sqlite.core.DB#busy_handler(BusyHandler) */
     @Override
-    public synchronized native void busy_handler(BusyHandler busyHandler);
+    public synchronized void busy_handler(BusyHandler busyHandler) {
+        try {
+            $this.busy_handler(busyHandler);
+        } catch (SQLException _) {
+        }
+    }
 
     /** @see org.sqlite.core.DB#prepare(java.lang.String) */
     @Override
@@ -132,246 +159,395 @@ public final class NativeDB extends DB {
                         MessageFormat.format(
                                 "DriverManager [{0}] [SQLite EXEC] {1}",
                                 Thread.currentThread().getName(), sql));
-        return new SafeStmtPtr(this, prepare_utf8(stringToUtf8ByteArray(sql)));
+        return new SafeStmtPtr(this, $this.prepare(sql));
     }
-
-    synchronized native long prepare_utf8(byte[] sqlUtf8) throws SQLException;
 
     /** @see org.sqlite.core.DB#errmsg() */
     @Override
     synchronized String errmsg() {
-        return utf8ByteBufferToString(errmsg_utf8());
+        try {
+            return $this.errmsg();
+        } catch (SQLException _) {
+            return null;
+        }
     }
-
-    synchronized native ByteBuffer errmsg_utf8();
 
     /** @see org.sqlite.core.DB#libversion() */
     @Override
     public synchronized String libversion() {
-        return utf8ByteBufferToString(libversion_utf8());
+        return $this.libversion();
     }
-
-    native ByteBuffer libversion_utf8();
 
     /** @see org.sqlite.core.DB#changes() */
     @Override
-    public synchronized native long changes();
+    public synchronized long changes() {
+        try {
+            return $this.changes();
+        } catch (SQLException _) {
+            return 0;
+        }
+    }
 
     /** @see org.sqlite.core.DB#total_changes() */
     @Override
-    public synchronized native long total_changes();
-
-    /** @see org.sqlite.core.DB#finalize(long) */
-    @Override
-    protected synchronized native int finalize(long stmt);
-
-    /** @see org.sqlite.core.DB#step(long) */
-    @Override
-    public synchronized native int step(long stmt);
-
-    /** @see org.sqlite.core.DB#reset(long) */
-    @Override
-    public synchronized native int reset(long stmt);
-
-    /** @see org.sqlite.core.DB#clear_bindings(long) */
-    @Override
-    public synchronized native int clear_bindings(long stmt);
-
-    /** @see org.sqlite.core.DB#bind_parameter_count(long) */
-    @Override
-    synchronized native int bind_parameter_count(long stmt);
-
-    /** @see org.sqlite.core.DB#column_count(long) */
-    @Override
-    public synchronized native int column_count(long stmt);
-
-    /** @see org.sqlite.core.DB#column_type(long, int) */
-    @Override
-    public synchronized native int column_type(long stmt, int col);
-
-    /** @see org.sqlite.core.DB#column_decltype(long, int) */
-    @Override
-    public synchronized String column_decltype(long stmt, int col) {
-        return utf8ByteBufferToString(column_decltype_utf8(stmt, col));
+    public synchronized long total_changes() {
+        try {
+            return $this.total_changes();
+        } catch (SQLException _) {
+            return 0;
+        }
     }
 
-    synchronized native ByteBuffer column_decltype_utf8(long stmt, int col);
-
-    /** @see org.sqlite.core.DB#column_table_name(long, int) */
+    /** @see org.sqlite.core.DB#finalize(MemorySegment) */
     @Override
-    public synchronized String column_table_name(long stmt, int col) {
-        return utf8ByteBufferToString(column_table_name_utf8(stmt, col));
+    protected synchronized int finalize(MemorySegment stmt) {
+        try {
+            return $this.finalize(stmt);
+        } catch (SQLException _) {
+            return SQLITE_MISUSE;
+        }
     }
 
-    synchronized native ByteBuffer column_table_name_utf8(long stmt, int col);
-
-    /** @see org.sqlite.core.DB#column_name(long, int) */
+    /** @see org.sqlite.core.DB#step(MemorySegment) */
     @Override
-    public synchronized String column_name(long stmt, int col) {
-        return utf8ByteBufferToString(column_name_utf8(stmt, col));
+    public synchronized int step(MemorySegment stmt) {
+        try {
+            return $this.step(stmt);
+        } catch (SQLException _) {
+            return SQLITE_MISUSE;
+        }
     }
 
-    synchronized native ByteBuffer column_name_utf8(long stmt, int col);
-
-    /** @see org.sqlite.core.DB#column_text(long, int) */
+    /** @see org.sqlite.core.DB#reset(MemorySegment) */
     @Override
-    public synchronized String column_text(long stmt, int col) {
-        return utf8ByteBufferToString(column_text_utf8(stmt, col));
+    public synchronized int reset(MemorySegment stmt) {
+        try {
+            return $this.reset(stmt);
+        } catch (SQLException _) {
+            return SQLITE_MISUSE;
+        }
     }
 
-    synchronized native ByteBuffer column_text_utf8(long stmt, int col);
-
-    /** @see org.sqlite.core.DB#column_blob(long, int) */
+    /** @see org.sqlite.core.DB#clear_bindings(MemorySegment) */
     @Override
-    public synchronized native byte[] column_blob(long stmt, int col);
-
-    /** @see org.sqlite.core.DB#column_double(long, int) */
-    @Override
-    public synchronized native double column_double(long stmt, int col);
-
-    /** @see org.sqlite.core.DB#column_long(long, int) */
-    @Override
-    public synchronized native long column_long(long stmt, int col);
-
-    /** @see org.sqlite.core.DB#column_int(long, int) */
-    @Override
-    public synchronized native int column_int(long stmt, int col);
-
-    /** @see org.sqlite.core.DB#bind_null(long, int) */
-    @Override
-    synchronized native int bind_null(long stmt, int pos);
-
-    /** @see org.sqlite.core.DB#bind_int(long, int, int) */
-    @Override
-    synchronized native int bind_int(long stmt, int pos, int v);
-
-    /** @see org.sqlite.core.DB#bind_long(long, int, long) */
-    @Override
-    synchronized native int bind_long(long stmt, int pos, long v);
-
-    /** @see org.sqlite.core.DB#bind_double(long, int, double) */
-    @Override
-    synchronized native int bind_double(long stmt, int pos, double v);
-
-    /** @see org.sqlite.core.DB#bind_text(long, int, java.lang.String) */
-    @Override
-    synchronized int bind_text(long stmt, int pos, String v) {
-        return bind_text_utf8(stmt, pos, stringToUtf8ByteArray(v));
+    public synchronized int clear_bindings(MemorySegment stmt) {
+        try {
+            return $this.clear_bindings(stmt);
+        } catch (SQLException _) {
+            return SQLITE_MISUSE;
+        }
     }
 
-    synchronized native int bind_text_utf8(long stmt, int pos, byte[] vUtf8);
-
-    /** @see org.sqlite.core.DB#bind_blob(long, int, byte[]) */
+    /** @see org.sqlite.core.DB#bind_parameter_count(MemorySegment) */
     @Override
-    synchronized native int bind_blob(long stmt, int pos, byte[] v);
-
-    /** @see org.sqlite.core.DB#result_null(long) */
-    @Override
-    public synchronized native void result_null(long context);
-
-    /** @see org.sqlite.core.DB#result_text(long, java.lang.String) */
-    @Override
-    public synchronized void result_text(long context, String val) {
-        result_text_utf8(context, stringToUtf8ByteArray(val));
+    synchronized int bind_parameter_count(MemorySegment stmt) {
+        try {
+            return $this.bind_parameter_count(stmt);
+        } catch (SQLException _) {
+            return SQLITE_MISUSE;
+        }
     }
 
-    synchronized native void result_text_utf8(long context, byte[] valUtf8);
-
-    /** @see org.sqlite.core.DB#result_blob(long, byte[]) */
+    /** @see org.sqlite.core.DB#column_count(MemorySegment) */
     @Override
-    public synchronized native void result_blob(long context, byte[] val);
-
-    /** @see org.sqlite.core.DB#result_double(long, double) */
-    @Override
-    public synchronized native void result_double(long context, double val);
-
-    /** @see org.sqlite.core.DB#result_long(long, long) */
-    @Override
-    public synchronized native void result_long(long context, long val);
-
-    /** @see org.sqlite.core.DB#result_int(long, int) */
-    @Override
-    public synchronized native void result_int(long context, int val);
-
-    /** @see org.sqlite.core.DB#result_error(long, java.lang.String) */
-    @Override
-    public synchronized void result_error(long context, String err) {
-        result_error_utf8(context, stringToUtf8ByteArray(err));
+    public synchronized int column_count(MemorySegment stmt) {
+        try {
+            return $this.column_count(stmt);
+        } catch (SQLException _) {
+            return SQLITE_MISUSE;
+        }
     }
 
-    synchronized native void result_error_utf8(long context, byte[] errUtf8);
+    /** @see org.sqlite.core.DB#column_type(MemorySegment, int) */
+    @Override
+    public synchronized int column_type(MemorySegment stmt, int col) {
+        try {
+            return $this.column_type(stmt, col);
+        } catch (SQLException _) {
+            return SQLITE_MISUSE;
+        }
+    }
+
+    /** @see org.sqlite.core.DB#column_decltype(MemorySegment, int) */
+    @Override
+    public synchronized String column_decltype(MemorySegment stmt, int col) {
+        try {
+            return $this.column_decltype(stmt, col);
+        } catch (SQLException _) {
+            return null;
+        }
+    }
+
+    /** @see org.sqlite.core.DB#column_table_name(MemorySegment, int) */
+    @Override
+    public synchronized String column_table_name(MemorySegment stmt, int col) {
+        try {
+            return $this.column_table_name(stmt, col);
+        } catch (SQLException _) {
+            return null;
+        }
+    }
+
+    /** @see org.sqlite.core.DB#column_name(MemorySegment, int) */
+    @Override
+    public synchronized String column_name(MemorySegment stmt, int col) {
+        try {
+            return $this.column_name(stmt, col);
+        } catch (SQLException _) {
+            return null;
+        }
+    }
+
+    /** @see org.sqlite.core.DB#column_text(MemorySegment, int) */
+    @Override
+    public synchronized String column_text(MemorySegment stmt, int col) {
+        try {
+            return $this.column_text(stmt, col);
+        } catch (SQLException _) {
+            return null;
+        }
+    }
+
+    /** @see org.sqlite.core.DB#column_blob(MemorySegment, int) */
+    @Override
+    public synchronized byte[] column_blob(MemorySegment stmt, int col) {
+        try {
+            return $this.column_blob(stmt, col);
+        } catch (SQLException _) {
+            return null;
+        }
+    }
+
+    /** @see org.sqlite.core.DB#column_double(MemorySegment, int) */
+    @Override
+    public synchronized double column_double(MemorySegment stmt, int col) {
+        try {
+            return $this.column_double(stmt, col);
+        } catch (SQLException _) {
+            return 0;
+        }
+    }
+
+    /** @see org.sqlite.core.DB#column_long(MemorySegment, int) */
+    @Override
+    public synchronized long column_long(MemorySegment stmt, int col) {
+        try {
+            return $this.column_long(stmt, col);
+        } catch (SQLException _) {
+            return 0;
+        }
+    }
+
+    /** @see org.sqlite.core.DB#column_int(MemorySegment, int) */
+    @Override
+    public synchronized int column_int(MemorySegment stmt, int col) {
+        try {
+            return $this.column_int(stmt, col);
+        } catch (SQLException _) {
+            return 0;
+        }
+    }
+
+    /** @see org.sqlite.core.DB#bind_null(MemorySegment, int) */
+    @Override
+    synchronized int bind_null(MemorySegment stmt, int pos) {
+        try {
+            return $this.bind_null(stmt, pos);
+        } catch (SQLException _) {
+            return SQLITE_MISUSE;
+        }
+    }
+
+    /** @see org.sqlite.core.DB#bind_int(MemorySegment, int, int) */
+    @Override
+    synchronized int bind_int(MemorySegment stmt, int pos, int v) {
+        try {
+            return $this.bind_int(stmt, pos, v);
+        } catch (SQLException _) {
+            return SQLITE_MISUSE;
+        }
+    }
+
+    /** @see org.sqlite.core.DB#bind_long(MemorySegment, int, long) */
+    @Override
+    synchronized int bind_long(MemorySegment stmt, int pos, long v) {
+        try {
+            return $this.bind_long(stmt, pos, v);
+        } catch (SQLException _) {
+            return SQLITE_MISUSE;
+        }
+    }
+
+    /** @see org.sqlite.core.DB#bind_double(MemorySegment, int, double) */
+    @Override
+    synchronized int bind_double(MemorySegment stmt, int pos, double v) {
+        try {
+            return $this.bind_double(stmt, pos, v);
+        } catch (SQLException _) {
+            return SQLITE_MISUSE;
+        }
+    }
+
+    /** @see org.sqlite.core.DB#bind_text(MemorySegment, int, java.lang.String) */
+    @Override
+    synchronized int bind_text(MemorySegment stmt, int pos, String v) {
+        try {
+            return $this.bind_text(stmt, pos, v);
+        } catch (SQLException _) {
+            return SQLITE_MISUSE;
+        }
+    }
+
+    /** @see org.sqlite.core.DB#bind_blob(MemorySegment, int, byte[]) */
+    @Override
+    synchronized int bind_blob(MemorySegment stmt, int pos, byte[] v) {
+        try {
+            return $this.bind_blob(stmt, pos, v);
+        } catch (SQLException _) {
+            return SQLITE_MISUSE;
+        }
+    }
+
+    /** @see org.sqlite.core.DB#result_null(MemorySegment) */
+    @Override
+    public synchronized void result_null(MemorySegment context) {
+        $this.result_null(context);
+    }
+
+    /** @see org.sqlite.core.DB#result_text(MemorySegment, java.lang.String) */
+    @Override
+    public synchronized void result_text(MemorySegment context, String val) {
+        $this.result_text(context, val);
+    }
+
+    /** @see org.sqlite.core.DB#result_blob(MemorySegment, byte[]) */
+    @Override
+    public synchronized void result_blob(MemorySegment context, byte[] val) {
+        $this.result_blob(context, val);
+    }
+
+    /** @see org.sqlite.core.DB#result_double(MemorySegment, double) */
+    @Override
+    public synchronized void result_double(MemorySegment context, double val) {
+        $this.result_double(context, val);
+    }
+
+    /** @see org.sqlite.core.DB#result_long(MemorySegment, long) */
+    @Override
+    public synchronized void result_long(MemorySegment context, long val) {
+        $this.result_long(context, val);
+    }
+
+    /** @see org.sqlite.core.DB#result_int(MemorySegment, int) */
+    @Override
+    public synchronized void result_int(MemorySegment context, int val) {
+        $this.result_int(context, val);
+    }
+
+    /** @see org.sqlite.core.DB#result_error(MemorySegment, java.lang.String) */
+    @Override
+    public synchronized void result_error(MemorySegment context, String err) {
+        $this.result_error(context, err);
+    }
 
     /** @see org.sqlite.core.DB#value_text(org.sqlite.Function, int) */
     @Override
     public synchronized String value_text(Function f, int arg) {
-        return utf8ByteBufferToString(value_text_utf8(f, arg));
+        try {
+            return $this.value_text(f, arg);
+        } catch (SQLException _) {
+            return null;
+        }
     }
-
-    synchronized native ByteBuffer value_text_utf8(Function f, int argUtf8);
 
     /** @see org.sqlite.core.DB#value_blob(org.sqlite.Function, int) */
     @Override
-    public synchronized native byte[] value_blob(Function f, int arg);
+    public synchronized byte[] value_blob(Function f, int arg) {
+        try {
+            return $this.value_blob(f, arg);
+        } catch (SQLException _) {
+            return null;
+        }
+    }
 
     /** @see org.sqlite.core.DB#value_double(org.sqlite.Function, int) */
     @Override
-    public synchronized native double value_double(Function f, int arg);
+    public synchronized double value_double(Function f, int arg) {
+        try {
+            return $this.value_double(f, arg);
+        } catch (SQLException _) {
+            return 0;
+        }
+    }
 
     /** @see org.sqlite.core.DB#value_long(org.sqlite.Function, int) */
     @Override
-    public synchronized native long value_long(Function f, int arg);
+    public synchronized long value_long(Function f, int arg) {
+        try {
+            return $this.value_long(f, arg);
+        } catch (SQLException _) {
+            return 0;
+        }
+    }
 
     /** @see org.sqlite.core.DB#value_int(org.sqlite.Function, int) */
     @Override
-    public synchronized native int value_int(Function f, int arg);
+    public synchronized int value_int(Function f, int arg) {
+        try {
+            return $this.value_int(f, arg);
+        } catch (SQLException _) {
+            return 0;
+        }
+    }
 
-    /** @see org.sqlite.core.DB#value_type(org.sqlite.Function, int) */
+    /**
+     * @see org.sqlite.core.DB#value_type(org.sqlite.Function, int)
+     * */
     @Override
-    public synchronized native int value_type(Function f, int arg);
+    public synchronized int value_type(Function f, int arg) {
+        try {
+            return $this.value_type(f, arg);
+        } catch (SQLException e) {
+            // Likely caused a JVM crash in sqlite-jdbc. See NativeDB_c#value_type(Function, int)
+            return -1;
+        }
+    }
 
     /** @see org.sqlite.core.DB#create_function(java.lang.String, org.sqlite.Function, int, int) */
     @Override
     public synchronized int create_function(String name, Function func, int nArgs, int flags)
             throws SQLException {
-        return create_function_utf8(nameToUtf8ByteArray("function", name), func, nArgs, flags);
+        return $this.create_function(validateName("function", name), func, nArgs, flags);
     }
-
-    synchronized native int create_function_utf8(
-            byte[] nameUtf8, Function func, int nArgs, int flags);
 
     /** @see org.sqlite.core.DB#destroy_function(java.lang.String) */
     @Override
     public synchronized int destroy_function(String name) throws SQLException {
-        return destroy_function_utf8(nameToUtf8ByteArray("function", name));
+        return $this.destroy_function(validateName("function", name));
     }
-
-    synchronized native int destroy_function_utf8(byte[] nameUtf8);
 
     /** @see org.sqlite.core.DB#create_collation(String, Collation) */
     @Override
     public synchronized int create_collation(String name, Collation coll) throws SQLException {
-        return create_collation_utf8(nameToUtf8ByteArray("collation", name), coll);
+        return $this.create_collation(validateName("collation", name), coll);
     }
-
-    synchronized native int create_collation_utf8(byte[] nameUtf8, Collation coll);
 
     /** @see org.sqlite.core.DB#destroy_collation(String) */
     @Override
     public synchronized int destroy_collation(String name) throws SQLException {
-        return destroy_collation_utf8(nameToUtf8ByteArray("collation", name));
+        return $this.destroy_collation(validateName("collation", name));
     }
 
-    synchronized native int destroy_collation_utf8(byte[] nameUtf8);
-
     @Override
-    public synchronized native int limit(int id, int value) throws SQLException;
+    public synchronized int limit(int id, int value) throws SQLException {
+        return $this.limit(id, value);
+    }
 
-    private byte[] nameToUtf8ByteArray(String nameType, String name) throws SQLException {
-        final byte[] nameUtf8 = stringToUtf8ByteArray(name);
-        if (name == null || "".equals(name) || nameUtf8.length > 255) {
+    private String validateName(String nameType, String name) throws SQLException {
+        if (name == null || "".equals(name) || name.getBytes(StandardCharsets.UTF_8).length > 255) {
             throw new SQLException("invalid " + nameType + " name: '" + name + "'");
         }
-        return nameUtf8;
+        return name;
     }
 
     /**
@@ -381,9 +557,9 @@ public final class NativeDB extends DB {
     @Override
     public int backup(String dbName, String destFileName, ProgressObserver observer)
             throws SQLException {
-        return backup(
-                stringToUtf8ByteArray(dbName),
-                stringToUtf8ByteArray(destFileName),
+        return $this.backup(
+                dbName,
+                destFileName,
                 observer,
                 DEFAULT_BACKUP_BUSY_SLEEP_TIME_MILLIS,
                 DEFAULT_BACKUP_NUM_BUSY_BEFORE_FAIL,
@@ -403,23 +579,14 @@ public final class NativeDB extends DB {
             int nTimeouts,
             int pagesPerStep)
             throws SQLException {
-        return backup(
-                stringToUtf8ByteArray(dbName),
-                stringToUtf8ByteArray(destFileName),
+        return $this.backup(
+                dbName,
+                destFileName,
                 observer,
                 sleepTimeMillis,
                 nTimeouts,
                 pagesPerStep);
     }
-
-    synchronized native int backup(
-            byte[] dbNameUtf8,
-            byte[] destFileNameUtf8,
-            ProgressObserver observer,
-            int sleepTimeMillis,
-            int nTimeouts,
-            int pagesPerStep)
-            throws SQLException;
 
     /**
      * @see org.sqlite.core.DB#restore(java.lang.String, java.lang.String,
@@ -429,7 +596,7 @@ public final class NativeDB extends DB {
     public synchronized int restore(String dbName, String sourceFileName, ProgressObserver observer)
             throws SQLException {
 
-        return restore(
+        return $this.restore(
                 dbName,
                 sourceFileName,
                 observer,
@@ -449,23 +616,14 @@ public final class NativeDB extends DB {
             int pagesPerStep)
             throws SQLException {
 
-        return restore(
-                stringToUtf8ByteArray(dbName),
-                stringToUtf8ByteArray(sourceFileName),
+        return $this.restore(
+                dbName,
+                sourceFileName,
                 observer,
                 sleepTimeMillis,
                 nTimeouts,
                 pagesPerStep);
     }
-
-    synchronized native int restore(
-            byte[] dbNameUtf8,
-            byte[] sourceFileName,
-            ProgressObserver observer,
-            int sleepTimeMillis,
-            int nTimeouts,
-            int pagesPerStep)
-            throws SQLException;
 
     // COMPOUND FUNCTIONS (for optimisation) /////////////////////////
 
@@ -476,22 +634,26 @@ public final class NativeDB extends DB {
      *     res[col][0] = true if column constrained NOT NULL<br>
      *     res[col][1] = true if column is part of the primary key<br>
      *     res[col][2] = true if column is auto-increment.
-     * @see org.sqlite.core.DB#column_metadata(long)
+     * @see org.sqlite.core.DB#column_metadata(MemorySegment)
      */
     @Override
-    synchronized native boolean[][] column_metadata(long stmt);
-
-    // pointer to commit listener structure, if enabled.
-    private long commitListener = 0;
-
-    @Override
-    synchronized native void set_commit_listener(boolean enabled);
-
-    // pointer to update listener structure, if enabled.
-    private long updateListener = 0;
+    synchronized boolean[][] column_metadata(MemorySegment stmt) {
+        try {
+            return $this.column_metadata(stmt);
+        } catch (SQLException _) {
+            return null;
+        }
+    }
 
     @Override
-    synchronized native void set_update_listener(boolean enabled);
+    synchronized void set_commit_listener(boolean enabled) {
+        $this.set_commit_listener(enabled);
+    }
+
+    @Override
+    synchronized void set_update_listener(boolean enabled) {
+        $this.set_update_listener(enabled);
+    }
 
     /**
      * Throws an SQLException. Called from native code
@@ -503,29 +665,16 @@ public final class NativeDB extends DB {
         throw new SQLException(msg);
     }
 
-    static byte[] stringToUtf8ByteArray(String str) {
-        if (str == null) {
-            return null;
-        }
-        return str.getBytes(StandardCharsets.UTF_8);
+    Arena progressHandlerArena = null;
+
+    public synchronized void register_progress_handler(
+            int vmCalls, ProgressHandler progressHandler) throws SQLException {
+        $this.register_progress_handler(vmCalls, progressHandler);
     }
 
-    static String utf8ByteBufferToString(ByteBuffer buffer) {
-        if (buffer == null) {
-            return null;
-        }
-        byte[] buff = new byte[buffer.remaining()];
-        buffer.get(buff);
-        return new String(buff, StandardCharsets.UTF_8);
+    public synchronized void clear_progress_handler() throws SQLException {
+        $this.clear_progress_handler();
     }
-
-    /** handler pointer to JNI global progressHandler reference. */
-    private long progressHandler;
-
-    public synchronized native void register_progress_handler(
-            int vmCalls, ProgressHandler progressHandler) throws SQLException;
-
-    public synchronized native void clear_progress_handler() throws SQLException;
 
     /**
      * Getter for native pointer to validate memory is properly cleaned up in unit tests
@@ -533,25 +682,33 @@ public final class NativeDB extends DB {
      * @return a native pointer to validate memory is properly cleaned up in unit tests
      */
     long getBusyHandler() {
-        return busyHandler;
+        return busyHandlerArena == null ? 0 : 1;
     }
 
     /**
      * Getter for native pointer to validate memory is properly cleaned up in unit tests
      *
-     * @return a native pointer to validate memory is properly cleaned up in unit tests
+     * @return 0
+     *
+     * @deprecated This is not relevant with the FFM rewrite. One upcall stub is allocated per DB object for each of
+     * {@code commit_hook()} and {@code rollback_hook()} using {@code Arena.ofAuto()}.
      */
+    @Deprecated
     long getCommitListener() {
-        return commitListener;
+        return 0;
     }
 
     /**
      * Getter for native pointer to validate memory is properly cleaned up in unit tests
      *
-     * @return a native pointer to validate memory is properly cleaned up in unit tests
+     * @return 0
+     *
+     * @deprecated This is not relevant with the FFM rewrite. One upcall stub is allocated per DB object for
+     * {@code update_hook()} using {@code Arena.ofAuto()}.
      */
+    @Deprecated
     long getUpdateListener() {
-        return updateListener;
+        return 0;
     }
 
     /**
@@ -560,12 +717,16 @@ public final class NativeDB extends DB {
      * @return a native pointer to validate memory is properly cleaned up in unit tests
      */
     long getProgressHandler() {
-        return progressHandler;
+        return progressHandlerArena == null ? 0 : 1;
     }
 
     @Override
-    public synchronized native byte[] serialize(String schema) throws SQLException;
+    public synchronized byte[] serialize(String schema) throws SQLException {
+        return $this.serialize(schema);
+    }
 
     @Override
-    public synchronized native void deserialize(String schema, byte[] buff) throws SQLException;
+    public synchronized void deserialize(String schema, byte[] buff) throws SQLException {
+        $this.deserialize(schema, buff);
+    }
 }

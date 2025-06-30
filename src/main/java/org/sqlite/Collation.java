@@ -15,6 +15,7 @@
  */
 package org.sqlite;
 
+import java.lang.foreign.Arena;
 import java.sql.Connection;
 import java.sql.SQLException;
 import org.sqlite.core.Codes;
@@ -43,6 +44,8 @@ import org.sqlite.core.DB;
 public abstract class Collation {
     private SQLiteConnection conn;
     private DB db;
+
+    public Arena _arena = Arena.ofAuto();
 
     /**
      * Registers a given collation with the connection.
@@ -90,4 +93,8 @@ public abstract class Collation {
      *     equal to, or greater than the second, respectively
      */
     protected abstract int xCompare(String str1, String str2);
+
+    public int _xCompare(String str1, String str2) {
+        return xCompare(str1, str2);
+    }
 }

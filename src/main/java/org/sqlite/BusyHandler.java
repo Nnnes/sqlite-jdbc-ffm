@@ -61,4 +61,8 @@ public abstract class BusyHandler {
      *     non-zero, then another attempt is made to access the database and the cycle repeats.
      */
     protected abstract int callback(int nbPrevInvok) throws SQLException;
+
+    public int _callback(int nbPrevInvok) throws SQLException {
+        return callback(nbPrevInvok);
+    }
 }

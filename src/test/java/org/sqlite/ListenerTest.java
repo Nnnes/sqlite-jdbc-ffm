@@ -13,6 +13,7 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.sqlite.core.DB;
@@ -205,6 +206,7 @@ public class ListenerTest {
      * @throws Exception on test failure
      */
     @Test
+    @Disabled("Unnecessary with FFM rewrite: only one update_hook() stub needed per NativeDB instance")
     public void testUpdateHandlerCleanup() throws Exception {
         SQLiteConnection sqliteConnection = connectionOne;
         final DB database = sqliteConnection.getDatabase();
@@ -229,6 +231,7 @@ public class ListenerTest {
      * @throws Exception on test failure
      */
     @Test
+    @Disabled("Unnecessary with FFM rewrite: only one commit_hook() and rollback_hook() stub needed per NativeDB instance")
     public void testCommitHandlerCleanup() throws Exception {
         SQLiteConnection sqliteConnection = connectionOne;
         final DB database = sqliteConnection.getDatabase();

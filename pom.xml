@@ -103,7 +103,7 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.14.0</version>
                 <configuration>
-                    <release>8</release>
+                    <release>23</release>
                 </configuration>
                 <executions>
                     <execution>
@@ -113,7 +113,7 @@
                             <goal>compile</goal>
                         </goals>
                         <configuration>
-                            <release>9</release>
+                            <release>23</release>
                             <compileSourceRoots>
                                 <compileSourceRoot>${java9.sourceDirectory}</compileSourceRoot>
                             </compileSourceRoots>

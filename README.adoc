@@ -1,3 +1,85 @@
+== sqlite-jdbc-ffm
+
+The goal of this fork of https://github.com/xerial/sqlite-jdbc[sqlite-jdbc] is to keep nearly _(see below)_ the same Java interface as the original library but remove the set of bundled native SQLite libraries and JNI bindings, instead using the JDK 22+ https://openjdk.org/jeps/454[Foreign Function & Memory API] to communicate with an external SQLite native library.
+
+.Benefits
+* Each version of `sqlite-jdbc-ffm` supports many versions of SQLite, including future updates
+* No extra temporary files created at runtime
+* Much smaller JAR size _(WIP)_
+* May be measurably faster in some cases _(WIP)_
+
+.Drawbacks
+* Must locate or supply your own SQLite shared library file (`libsqlite3.so`/`sqlite3.dll`/`libsqlite3.dylib`)
+** This may make cross-platform distribution more trouble than it is worth
+
+.Requirements
+* JDK 23+
+* SQLite 3.37.0+
+** Currently, the SQLite library must include every function used by `sqlite-jdbc-ffm` when it is loaded. Many existing SQLite libraries do not support serialization/deserialization in particular. _This should change in the future._
+
+=== Usage
+
+==== Maven Central
+
+Not available yet
+
+==== JDBC
+
+See `sqlite-jdbc` for code samples. The JDBC API should be identical.
+
+==== SQLite library file
+
+Ready-to-use SQLite shared libraries for Windows (DLLs) are available from the official https://sqlite.org/download.html#win32[SQLite website]. Other platforms' package managers might have `sqlite3-dev` or similar available, or you may want to compile from source yourself.
+
+.Example compile of `libsqlite3.so` on Linux (replace `.so` with `.dylib` for macOS)
+[%collapsible]
+====
+Requirements: GCC/Clang, Make
+
+1. Download `sqlite-autoconf-X.tar.gz` from the official https://sqlite.org/download.html#a3[SQLite website]
+2. Extract and `cd`
+3. `./configure && make libsqlite3.so`
+====
+
+NOTE: The `sqlitejdbc.*` library files built by and distributed with `sqlite-jdbc` currently cannot be used by `sqlite-jdbc-ffm`. They contain JNI code that looks for variables and methods whose types are different in `sqlite-jdbc-ffm`. _This may change in the future._
+
+==== Loading SQLite
+
+`sqlite-jdbc-ffm` uses https://docs.oracle.com/en/java/javase/23/docs/api/java.base/java/lang/foreign/SymbolLookup.html#libraryLookup(java.lang.String,java.lang.foreign.Arena)[`SymbolLookup#libraryLookup(System.mapLibraryName("sqlite3"), ...)`] internally to load the SQLite native library. Use the JVM argument
+[source]
+----
+-Djava.library.path="/example/path/to/folder containing sqlite/"
+----
+to tell it where to look. If you do not do this, Java will search the system PATH for a match. Beware that incompatible versions may exist in unexpected places in your PATH!
+
+NOTE: The SQLite library file must be named `libsqlite3.so` (Linux), `sqlite3.dll` (Windows), or `libsqlite3.dylib` (macOS). _This should change in the future._
+
+You should https://openjdk.org/jeps/472#Enabling-native-access[enable native access] for module `org.xerial.sqlitejdbc` (or for `UNNAMED-MODULE` if not using JPMS). Future JDK releases will not allow you to use `sqlite-jdbc-ffm` (or `sqlite-jdbc`) without doing so.
+
+=== API differences from sqlite-jdbc
+
+The JDBC API is identical.
+
+The SQLite library bundled with `sqlite-jdbc` includes some SQLite https://github.com/xerial/sqlite-jdbc/blob/master/src/main/ext/extension-functions.c[extension functions]. Follow the compilation instructions provided in that file if you need these. Note that https://sqlite.org/lang_mathfunc.html[many of the math functions] are present in SQLite 3.35.0+, provided it has been compiled to include them.
+
+All uses of `long` for raw memory addresses, mostly involving `org.sqlite.core.SafeStmtPtr`, have been changed to instead use `MemorySegment`. This includes 2 package-private fields in `org.sqlite.Function` and a large number of fields and methods in `org.sqlite.core.*` classes.
+
+=== Other notes
+
+`sqlite-jdbc-ffm` passes all relevant tests included with `sqlite-jdbc` on Linux x64 and Windows x64. Some native functions have no test coverage yet.
+
+Some public methods have been added to various `org.sqlite.*` classes to avoid use of reflection that a direct rewrite of the JNI C code would have required. These have been prefixed with `_` and should not be considered stable.
+
+Future work will aim to improve performance and SQLite compatibility and reduce library size while maintaining the same level of Java API parity with `sqlite-jdbc`.
+
+Questions, bug reports, feature requests, pull requests, test results from more platforms, and performance comparisons are welcome!
+
+'''
+
+The original README from `sqlite-jdbc` appears unedited below. Some parts will not apply to `sqlite-jdbc-ffm`.
+
+'''
+
 = SQLite JDBC Driver
 :project-version: 3.50.2.0
 
