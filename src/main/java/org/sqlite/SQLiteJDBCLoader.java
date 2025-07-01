@@ -44,7 +44,6 @@ import org.sqlite.util.LibraryLoaderUtil;
 import org.sqlite.util.Logger;
 import org.sqlite.util.LoggerFactory;
 import org.sqlite.util.OSInfo;
-import org.sqlite.util.StringUtils;
 
 /**
  * Set the system properties, org.sqlite.lib.path, org.sqlite.lib.name, appropriately so that the
@@ -364,7 +363,7 @@ public class SQLiteJDBCLoader {
                         "No native library found for os.name=%s, os.arch=%s, paths=[%s]",
                         OSInfo.getOSName(),
                         OSInfo.getArchName(),
-                        StringUtils.join(triedPaths, File.pathSeparator)));
+                        String.join(File.pathSeparator, triedPaths)));
     }
 
     @SuppressWarnings("unused")

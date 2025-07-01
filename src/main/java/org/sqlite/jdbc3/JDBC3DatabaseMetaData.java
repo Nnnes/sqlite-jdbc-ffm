@@ -28,7 +28,6 @@ import org.sqlite.jdbc3.JDBC3DatabaseMetaData.ImportedKeyFinder.ForeignKey;
 import org.sqlite.util.Logger;
 import org.sqlite.util.LoggerFactory;
 import org.sqlite.util.QueryUtils;
-import org.sqlite.util.StringUtils;
 
 public abstract class JDBC3DatabaseMetaData extends CoreDatabaseMetaData {
 
@@ -1591,7 +1590,7 @@ public abstract class JDBC3DatabaseMetaData extends CoreDatabaseMetaData {
                 rs.close();
             }
 
-            String sqlBlock = StringUtils.join(unionAll, " union all ");
+            String sqlBlock = String.join(" union all ", unionAll);
 
             return ((CoreStatement) stat)
                     .executeQuery(sql.append(sqlBlock).append(");").toString(), true);
