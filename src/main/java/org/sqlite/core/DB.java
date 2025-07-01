@@ -1245,7 +1245,8 @@ public abstract class DB implements Codes {
         }
     }
 
-    private void ensureAutocommit(MemorySegment beginPtr, MemorySegment commitPtr) throws SQLException {
+    private void ensureAutocommit(MemorySegment beginPtr, MemorySegment commitPtr)
+            throws SQLException {
         try {
             if (step(beginPtr) != SQLITE_DONE) {
                 return; // assume we are in a transaction

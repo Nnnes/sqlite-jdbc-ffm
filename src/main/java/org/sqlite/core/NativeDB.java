@@ -29,11 +29,12 @@ import org.sqlite.SQLiteConfig;
 import org.sqlite.util.Logger;
 import org.sqlite.util.LoggerFactory;
 
-/// This class interfaces with [NativeDB_c] in the same way as it does with `NativeDB.c` in the original JNI version of
-/// `sqlite-jdbc`.
+/// This class interfaces with [NativeDB_c] in the same way as it does with `NativeDB.c` in the
+/// original JNI version of `sqlite-jdbc`.
 ///
-/// Conversions between [String]s and UTF-8 `byte[]`s have been replaced with built-in FFM methods such as
-/// [Arena#allocateFrom(java.lang.String)] and [MemorySegment#getString(long, java.nio.charset.Charset)].
+/// Conversions between [String]s and UTF-8 `byte[]`s have been replaced with built-in FFM methods
+/// such as [Arena#allocateFrom(java.lang.String)] and [MemorySegment#getString(long,
+/// java.nio.charset.Charset)].
 public final class NativeDB extends DB {
     private static final Logger logger = LoggerFactory.getLogger(NativeDB.class);
     private static final int DEFAULT_BACKUP_BUSY_SLEEP_TIME_MILLIS = 100;
@@ -71,7 +72,8 @@ public final class NativeDB extends DB {
         if (isLoaded) return loadSucceeded;
 
         try {
-            // TODO: Rewrite SQLiteJDBCLoader instead of relying on the library being loaded in sqlite_h
+            // TODO: Rewrite SQLiteJDBCLoader instead of relying on the library being loaded in
+            //  sqlite_h
             // loadSucceeded = SQLiteJDBCLoader.initialize();
             System.loadLibrary("sqlite3");
             loadSucceeded = true;
@@ -83,19 +85,25 @@ public final class NativeDB extends DB {
 
     // WRAPPER FUNCTIONS ////////////////////////////////////////////
 
-    /** @see org.sqlite.core.DB#_open(java.lang.String, int) */
+    /**
+     * @see org.sqlite.core.DB#_open(java.lang.String, int)
+     */
     @Override
     protected synchronized void _open(String file, int openFlags) throws SQLException {
         $this._open(file, openFlags);
     }
 
-    /** @see org.sqlite.core.DB#_close() */
+    /**
+     * @see org.sqlite.core.DB#_close()
+     */
     @Override
     protected synchronized void _close() throws SQLException {
         $this._close();
     }
 
-    /** @see org.sqlite.core.DB#_exec(java.lang.String) */
+    /**
+     * @see org.sqlite.core.DB#_exec(java.lang.String)
+     */
     @Override
     public synchronized int _exec(String sql) throws SQLException {
         logger.trace(
@@ -106,13 +114,17 @@ public final class NativeDB extends DB {
         return $this._exec(sql);
     }
 
-    /** @see org.sqlite.core.DB#shared_cache(boolean) */
+    /**
+     * @see org.sqlite.core.DB#shared_cache(boolean)
+     */
     @Override
     public synchronized int shared_cache(boolean enable) {
         return $this.shared_cache(enable);
     }
 
-    /** @see org.sqlite.core.DB#enable_load_extension(boolean) */
+    /**
+     * @see org.sqlite.core.DB#enable_load_extension(boolean)
+     */
     @Override
     public synchronized int enable_load_extension(boolean enable) {
         try {
@@ -122,7 +134,9 @@ public final class NativeDB extends DB {
         }
     }
 
-    /** @see org.sqlite.core.DB#interrupt() */
+    /**
+     * @see org.sqlite.core.DB#interrupt()
+     */
     @Override
     public void interrupt() {
         try {
@@ -131,7 +145,9 @@ public final class NativeDB extends DB {
         }
     }
 
-    /** @see org.sqlite.core.DB#busy_timeout(int) */
+    /**
+     * @see org.sqlite.core.DB#busy_timeout(int)
+     */
     @Override
     public synchronized void busy_timeout(int ms) {
         try {
@@ -142,7 +158,9 @@ public final class NativeDB extends DB {
 
     Arena busyHandlerArena = null;
 
-    /** @see org.sqlite.core.DB#busy_handler(BusyHandler) */
+    /**
+     * @see org.sqlite.core.DB#busy_handler(BusyHandler)
+     */
     @Override
     public synchronized void busy_handler(BusyHandler busyHandler) {
         try {
@@ -151,7 +169,9 @@ public final class NativeDB extends DB {
         }
     }
 
-    /** @see org.sqlite.core.DB#prepare(java.lang.String) */
+    /**
+     * @see org.sqlite.core.DB#prepare(java.lang.String)
+     */
     @Override
     protected synchronized SafeStmtPtr prepare(String sql) throws SQLException {
         logger.trace(
@@ -162,7 +182,9 @@ public final class NativeDB extends DB {
         return new SafeStmtPtr(this, $this.prepare(sql));
     }
 
-    /** @see org.sqlite.core.DB#errmsg() */
+    /**
+     * @see org.sqlite.core.DB#errmsg()
+     */
     @Override
     synchronized String errmsg() {
         try {
@@ -172,13 +194,17 @@ public final class NativeDB extends DB {
         }
     }
 
-    /** @see org.sqlite.core.DB#libversion() */
+    /**
+     * @see org.sqlite.core.DB#libversion()
+     */
     @Override
     public synchronized String libversion() {
         return $this.libversion();
     }
 
-    /** @see org.sqlite.core.DB#changes() */
+    /**
+     * @see org.sqlite.core.DB#changes()
+     */
     @Override
     public synchronized long changes() {
         try {
@@ -188,7 +214,9 @@ public final class NativeDB extends DB {
         }
     }
 
-    /** @see org.sqlite.core.DB#total_changes() */
+    /**
+     * @see org.sqlite.core.DB#total_changes()
+     */
     @Override
     public synchronized long total_changes() {
         try {
@@ -198,7 +226,9 @@ public final class NativeDB extends DB {
         }
     }
 
-    /** @see org.sqlite.core.DB#finalize(MemorySegment) */
+    /**
+     * @see org.sqlite.core.DB#finalize(MemorySegment)
+     */
     @Override
     protected synchronized int finalize(MemorySegment stmt) {
         try {
@@ -208,7 +238,9 @@ public final class NativeDB extends DB {
         }
     }
 
-    /** @see org.sqlite.core.DB#step(MemorySegment) */
+    /**
+     * @see org.sqlite.core.DB#step(MemorySegment)
+     */
     @Override
     public synchronized int step(MemorySegment stmt) {
         try {
@@ -218,7 +250,9 @@ public final class NativeDB extends DB {
         }
     }
 
-    /** @see org.sqlite.core.DB#reset(MemorySegment) */
+    /**
+     * @see org.sqlite.core.DB#reset(MemorySegment)
+     */
     @Override
     public synchronized int reset(MemorySegment stmt) {
         try {
@@ -228,7 +262,9 @@ public final class NativeDB extends DB {
         }
     }
 
-    /** @see org.sqlite.core.DB#clear_bindings(MemorySegment) */
+    /**
+     * @see org.sqlite.core.DB#clear_bindings(MemorySegment)
+     */
     @Override
     public synchronized int clear_bindings(MemorySegment stmt) {
         try {
@@ -238,7 +274,9 @@ public final class NativeDB extends DB {
         }
     }
 
-    /** @see org.sqlite.core.DB#bind_parameter_count(MemorySegment) */
+    /**
+     * @see org.sqlite.core.DB#bind_parameter_count(MemorySegment)
+     */
     @Override
     synchronized int bind_parameter_count(MemorySegment stmt) {
         try {
@@ -248,7 +286,9 @@ public final class NativeDB extends DB {
         }
     }
 
-    /** @see org.sqlite.core.DB#column_count(MemorySegment) */
+    /**
+     * @see org.sqlite.core.DB#column_count(MemorySegment)
+     */
     @Override
     public synchronized int column_count(MemorySegment stmt) {
         try {
@@ -258,7 +298,9 @@ public final class NativeDB extends DB {
         }
     }
 
-    /** @see org.sqlite.core.DB#column_type(MemorySegment, int) */
+    /**
+     * @see org.sqlite.core.DB#column_type(MemorySegment, int)
+     */
     @Override
     public synchronized int column_type(MemorySegment stmt, int col) {
         try {
@@ -268,7 +310,9 @@ public final class NativeDB extends DB {
         }
     }
 
-    /** @see org.sqlite.core.DB#column_decltype(MemorySegment, int) */
+    /**
+     * @see org.sqlite.core.DB#column_decltype(MemorySegment, int)
+     */
     @Override
     public synchronized String column_decltype(MemorySegment stmt, int col) {
         try {
@@ -278,7 +322,9 @@ public final class NativeDB extends DB {
         }
     }
 
-    /** @see org.sqlite.core.DB#column_table_name(MemorySegment, int) */
+    /**
+     * @see org.sqlite.core.DB#column_table_name(MemorySegment, int)
+     */
     @Override
     public synchronized String column_table_name(MemorySegment stmt, int col) {
         try {
@@ -288,7 +334,9 @@ public final class NativeDB extends DB {
         }
     }
 
-    /** @see org.sqlite.core.DB#column_name(MemorySegment, int) */
+    /**
+     * @see org.sqlite.core.DB#column_name(MemorySegment, int)
+     */
     @Override
     public synchronized String column_name(MemorySegment stmt, int col) {
         try {
@@ -298,7 +346,9 @@ public final class NativeDB extends DB {
         }
     }
 
-    /** @see org.sqlite.core.DB#column_text(MemorySegment, int) */
+    /**
+     * @see org.sqlite.core.DB#column_text(MemorySegment, int)
+     */
     @Override
     public synchronized String column_text(MemorySegment stmt, int col) {
         try {
@@ -308,7 +358,9 @@ public final class NativeDB extends DB {
         }
     }
 
-    /** @see org.sqlite.core.DB#column_blob(MemorySegment, int) */
+    /**
+     * @see org.sqlite.core.DB#column_blob(MemorySegment, int)
+     */
     @Override
     public synchronized byte[] column_blob(MemorySegment stmt, int col) {
         try {
@@ -318,7 +370,9 @@ public final class NativeDB extends DB {
         }
     }
 
-    /** @see org.sqlite.core.DB#column_double(MemorySegment, int) */
+    /**
+     * @see org.sqlite.core.DB#column_double(MemorySegment, int)
+     */
     @Override
     public synchronized double column_double(MemorySegment stmt, int col) {
         try {
@@ -328,7 +382,9 @@ public final class NativeDB extends DB {
         }
     }
 
-    /** @see org.sqlite.core.DB#column_long(MemorySegment, int) */
+    /**
+     * @see org.sqlite.core.DB#column_long(MemorySegment, int)
+     */
     @Override
     public synchronized long column_long(MemorySegment stmt, int col) {
         try {
@@ -338,7 +394,9 @@ public final class NativeDB extends DB {
         }
     }
 
-    /** @see org.sqlite.core.DB#column_int(MemorySegment, int) */
+    /**
+     * @see org.sqlite.core.DB#column_int(MemorySegment, int)
+     */
     @Override
     public synchronized int column_int(MemorySegment stmt, int col) {
         try {
@@ -348,7 +406,9 @@ public final class NativeDB extends DB {
         }
     }
 
-    /** @see org.sqlite.core.DB#bind_null(MemorySegment, int) */
+    /**
+     * @see org.sqlite.core.DB#bind_null(MemorySegment, int)
+     */
     @Override
     synchronized int bind_null(MemorySegment stmt, int pos) {
         try {
@@ -358,7 +418,9 @@ public final class NativeDB extends DB {
         }
     }
 
-    /** @see org.sqlite.core.DB#bind_int(MemorySegment, int, int) */
+    /**
+     * @see org.sqlite.core.DB#bind_int(MemorySegment, int, int)
+     */
     @Override
     synchronized int bind_int(MemorySegment stmt, int pos, int v) {
         try {
@@ -368,7 +430,9 @@ public final class NativeDB extends DB {
         }
     }
 
-    /** @see org.sqlite.core.DB#bind_long(MemorySegment, int, long) */
+    /**
+     * @see org.sqlite.core.DB#bind_long(MemorySegment, int, long)
+     */
     @Override
     synchronized int bind_long(MemorySegment stmt, int pos, long v) {
         try {
@@ -378,7 +442,9 @@ public final class NativeDB extends DB {
         }
     }
 
-    /** @see org.sqlite.core.DB#bind_double(MemorySegment, int, double) */
+    /**
+     * @see org.sqlite.core.DB#bind_double(MemorySegment, int, double)
+     */
     @Override
     synchronized int bind_double(MemorySegment stmt, int pos, double v) {
         try {
@@ -388,7 +454,9 @@ public final class NativeDB extends DB {
         }
     }
 
-    /** @see org.sqlite.core.DB#bind_text(MemorySegment, int, java.lang.String) */
+    /**
+     * @see org.sqlite.core.DB#bind_text(MemorySegment, int, java.lang.String)
+     */
     @Override
     synchronized int bind_text(MemorySegment stmt, int pos, String v) {
         try {
@@ -398,7 +466,9 @@ public final class NativeDB extends DB {
         }
     }
 
-    /** @see org.sqlite.core.DB#bind_blob(MemorySegment, int, byte[]) */
+    /**
+     * @see org.sqlite.core.DB#bind_blob(MemorySegment, int, byte[])
+     */
     @Override
     synchronized int bind_blob(MemorySegment stmt, int pos, byte[] v) {
         try {
@@ -408,49 +478,65 @@ public final class NativeDB extends DB {
         }
     }
 
-    /** @see org.sqlite.core.DB#result_null(MemorySegment) */
+    /**
+     * @see org.sqlite.core.DB#result_null(MemorySegment)
+     */
     @Override
     public synchronized void result_null(MemorySegment context) {
         $this.result_null(context);
     }
 
-    /** @see org.sqlite.core.DB#result_text(MemorySegment, java.lang.String) */
+    /**
+     * @see org.sqlite.core.DB#result_text(MemorySegment, java.lang.String)
+     */
     @Override
     public synchronized void result_text(MemorySegment context, String val) {
         $this.result_text(context, val);
     }
 
-    /** @see org.sqlite.core.DB#result_blob(MemorySegment, byte[]) */
+    /**
+     * @see org.sqlite.core.DB#result_blob(MemorySegment, byte[])
+     */
     @Override
     public synchronized void result_blob(MemorySegment context, byte[] val) {
         $this.result_blob(context, val);
     }
 
-    /** @see org.sqlite.core.DB#result_double(MemorySegment, double) */
+    /**
+     * @see org.sqlite.core.DB#result_double(MemorySegment, double)
+     */
     @Override
     public synchronized void result_double(MemorySegment context, double val) {
         $this.result_double(context, val);
     }
 
-    /** @see org.sqlite.core.DB#result_long(MemorySegment, long) */
+    /**
+     * @see org.sqlite.core.DB#result_long(MemorySegment, long)
+     */
     @Override
     public synchronized void result_long(MemorySegment context, long val) {
         $this.result_long(context, val);
     }
 
-    /** @see org.sqlite.core.DB#result_int(MemorySegment, int) */
+    /**
+     * @see org.sqlite.core.DB#result_int(MemorySegment, int)
+     */
     @Override
     public synchronized void result_int(MemorySegment context, int val) {
         $this.result_int(context, val);
     }
 
-    /** @see org.sqlite.core.DB#result_error(MemorySegment, java.lang.String) */
+    /**
+     * @see org.sqlite.core.DB#result_error(MemorySegment, java.lang.String)
+     */
     @Override
     public synchronized void result_error(MemorySegment context, String err) {
         $this.result_error(context, err);
     }
 
-    /** @see org.sqlite.core.DB#value_text(org.sqlite.Function, int) */
+    /**
+     * @see org.sqlite.core.DB#value_text(org.sqlite.Function, int)
+     */
     @Override
     public synchronized String value_text(Function f, int arg) {
         try {
@@ -460,7 +546,9 @@ public final class NativeDB extends DB {
         }
     }
 
-    /** @see org.sqlite.core.DB#value_blob(org.sqlite.Function, int) */
+    /**
+     * @see org.sqlite.core.DB#value_blob(org.sqlite.Function, int)
+     */
     @Override
     public synchronized byte[] value_blob(Function f, int arg) {
         try {
@@ -470,7 +558,9 @@ public final class NativeDB extends DB {
         }
     }
 
-    /** @see org.sqlite.core.DB#value_double(org.sqlite.Function, int) */
+    /**
+     * @see org.sqlite.core.DB#value_double(org.sqlite.Function, int)
+     */
     @Override
     public synchronized double value_double(Function f, int arg) {
         try {
@@ -480,7 +570,9 @@ public final class NativeDB extends DB {
         }
     }
 
-    /** @see org.sqlite.core.DB#value_long(org.sqlite.Function, int) */
+    /**
+     * @see org.sqlite.core.DB#value_long(org.sqlite.Function, int)
+     */
     @Override
     public synchronized long value_long(Function f, int arg) {
         try {
@@ -490,7 +582,9 @@ public final class NativeDB extends DB {
         }
     }
 
-    /** @see org.sqlite.core.DB#value_int(org.sqlite.Function, int) */
+    /**
+     * @see org.sqlite.core.DB#value_int(org.sqlite.Function, int)
+     */
     @Override
     public synchronized int value_int(Function f, int arg) {
         try {
@@ -502,7 +596,7 @@ public final class NativeDB extends DB {
 
     /**
      * @see org.sqlite.core.DB#value_type(org.sqlite.Function, int)
-     * */
+     */
     @Override
     public synchronized int value_type(Function f, int arg) {
         try {
@@ -513,26 +607,34 @@ public final class NativeDB extends DB {
         }
     }
 
-    /** @see org.sqlite.core.DB#create_function(java.lang.String, org.sqlite.Function, int, int) */
+    /**
+     * @see org.sqlite.core.DB#create_function(java.lang.String, org.sqlite.Function, int, int)
+     */
     @Override
     public synchronized int create_function(String name, Function func, int nArgs, int flags)
             throws SQLException {
         return $this.create_function(validateName("function", name), func, nArgs, flags);
     }
 
-    /** @see org.sqlite.core.DB#destroy_function(java.lang.String) */
+    /**
+     * @see org.sqlite.core.DB#destroy_function(java.lang.String)
+     */
     @Override
     public synchronized int destroy_function(String name) throws SQLException {
         return $this.destroy_function(validateName("function", name));
     }
 
-    /** @see org.sqlite.core.DB#create_collation(String, Collation) */
+    /**
+     * @see org.sqlite.core.DB#create_collation(String, Collation)
+     */
     @Override
     public synchronized int create_collation(String name, Collation coll) throws SQLException {
         return $this.create_collation(validateName("collation", name), coll);
     }
 
-    /** @see org.sqlite.core.DB#destroy_collation(String) */
+    /**
+     * @see org.sqlite.core.DB#destroy_collation(String)
+     */
     @Override
     public synchronized int destroy_collation(String name) throws SQLException {
         return $this.destroy_collation(validateName("collation", name));
@@ -580,12 +682,7 @@ public final class NativeDB extends DB {
             int pagesPerStep)
             throws SQLException {
         return $this.backup(
-                dbName,
-                destFileName,
-                observer,
-                sleepTimeMillis,
-                nTimeouts,
-                pagesPerStep);
+                dbName, destFileName, observer, sleepTimeMillis, nTimeouts, pagesPerStep);
     }
 
     /**
@@ -605,7 +702,9 @@ public final class NativeDB extends DB {
                 DEFAULT_PAGES_PER_BACKUP_STEP);
     }
 
-    /** @see org.sqlite.core.DB#restore(String, String, ProgressObserver, int, int, int) */
+    /**
+     * @see org.sqlite.core.DB#restore(String, String, ProgressObserver, int, int, int)
+     */
     @Override
     public synchronized int restore(
             String dbName,
@@ -617,12 +716,7 @@ public final class NativeDB extends DB {
             throws SQLException {
 
         return $this.restore(
-                dbName,
-                sourceFileName,
-                observer,
-                sleepTimeMillis,
-                nTimeouts,
-                pagesPerStep);
+                dbName, sourceFileName, observer, sleepTimeMillis, nTimeouts, pagesPerStep);
     }
 
     // COMPOUND FUNCTIONS (for optimisation) /////////////////////////
@@ -667,8 +761,8 @@ public final class NativeDB extends DB {
 
     Arena progressHandlerArena = null;
 
-    public synchronized void register_progress_handler(
-            int vmCalls, ProgressHandler progressHandler) throws SQLException {
+    public synchronized void register_progress_handler(int vmCalls, ProgressHandler progressHandler)
+            throws SQLException {
         $this.register_progress_handler(vmCalls, progressHandler);
     }
 
@@ -689,9 +783,9 @@ public final class NativeDB extends DB {
      * Getter for native pointer to validate memory is properly cleaned up in unit tests
      *
      * @return 0
-     *
-     * @deprecated This is not relevant with the FFM rewrite. One upcall stub is allocated per DB object for each of
-     * {@code commit_hook()} and {@code rollback_hook()} using {@code Arena.ofAuto()}.
+     * @deprecated This is not relevant with the FFM rewrite. One upcall stub is allocated per DB
+     *     object for each of {@code commit_hook()} and {@code rollback_hook()} using {@code
+     *     Arena.ofAuto()}.
      */
     @Deprecated
     long getCommitListener() {
@@ -702,9 +796,8 @@ public final class NativeDB extends DB {
      * Getter for native pointer to validate memory is properly cleaned up in unit tests
      *
      * @return 0
-     *
-     * @deprecated This is not relevant with the FFM rewrite. One upcall stub is allocated per DB object for
-     * {@code update_hook()} using {@code Arena.ofAuto()}.
+     * @deprecated This is not relevant with the FFM rewrite. One upcall stub is allocated per DB
+     *     object for {@code update_hook()} using {@code Arena.ofAuto()}.
      */
     @Deprecated
     long getUpdateListener() {

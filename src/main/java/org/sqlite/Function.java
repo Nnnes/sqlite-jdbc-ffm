@@ -308,9 +308,13 @@ public abstract class Function {
         return db.value_type(this, arg);
     }
 
-    /** @throws SQLException */
+    /**
+     * @throws SQLException
+     */
     private void checkContext() throws SQLException {
-        if (conn == null || conn.getDatabase() == null || pContext.address() == MemorySegment.NULL.address()) {
+        if (conn == null
+                || conn.getDatabase() == null
+                || pContext.address() == MemorySegment.NULL.address()) {
             throw new SQLException("no context, not allowed to read value");
         }
     }
@@ -320,7 +324,9 @@ public abstract class Function {
      * @throws SQLException
      */
     private void checkValue(int arg) throws SQLException {
-        if (conn == null || conn.getDatabase() == null || pContext.address() == MemorySegment.NULL.address()) {
+        if (conn == null
+                || conn.getDatabase() == null
+                || pContext.address() == MemorySegment.NULL.address()) {
             throw new SQLException("not in value access state");
         }
         if (arg >= args) {
@@ -334,7 +340,9 @@ public abstract class Function {
      * @see Function
      */
     public abstract static class Aggregate extends Function implements Cloneable {
-        /** @see org.sqlite.Function#xFunc() */
+        /**
+         * @see org.sqlite.Function#xFunc()
+         */
         protected final void xFunc() {}
 
         /**
@@ -363,7 +371,9 @@ public abstract class Function {
             xFinal();
         }
 
-        /** @see java.lang.Object#clone() */
+        /**
+         * @see java.lang.Object#clone()
+         */
         public Object clone() throws CloneNotSupportedException {
             return super.clone();
         }

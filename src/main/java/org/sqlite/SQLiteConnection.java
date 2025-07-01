@@ -180,20 +180,24 @@ public abstract class SQLiteConnection implements Connection {
         connectionConfig.setTransactionMode(mode);
     }
 
-    /** @see java.sql.Connection#getTransactionIsolation() */
+    /**
+     * @see java.sql.Connection#getTransactionIsolation()
+     */
     @Override
     public int getTransactionIsolation() {
         return connectionConfig.getTransactionIsolation();
     }
 
-    /** @see java.sql.Connection#setTransactionIsolation(int) */
+    /**
+     * @see java.sql.Connection#setTransactionIsolation(int)
+     */
     public void setTransactionIsolation(int level) throws SQLException {
         checkOpen();
 
         switch (level) {
             case java.sql.Connection.TRANSACTION_READ_COMMITTED:
             case java.sql.Connection.TRANSACTION_REPEATABLE_READ:
-                // Fall-through: Spec allows upgrading isolation to a higher level
+            // Fall-through: Spec allows upgrading isolation to a higher level
             case java.sql.Connection.TRANSACTION_SERIALIZABLE:
                 getDatabase().exec("PRAGMA read_uncommitted = false;", getAutoCommit());
                 break;
@@ -327,7 +331,9 @@ public abstract class SQLiteConnection implements Connection {
         return db;
     }
 
-    /** @see java.sql.Connection#getAutoCommit() */
+    /**
+     * @see java.sql.Connection#getAutoCommit()
+     */
     @Override
     public boolean getAutoCommit() throws SQLException {
         checkOpen();
@@ -335,7 +341,9 @@ public abstract class SQLiteConnection implements Connection {
         return connectionConfig.isAutoCommit();
     }
 
-    /** @see java.sql.Connection#setAutoCommit(boolean) */
+    /**
+     * @see java.sql.Connection#setAutoCommit(boolean)
+     */
     @Override
     public void setAutoCommit(boolean ac) throws SQLException {
         checkOpen();
@@ -393,7 +401,9 @@ public abstract class SQLiteConnection implements Connection {
         return db.isClosed();
     }
 
-    /** @see java.sql.Connection#close() */
+    /**
+     * @see java.sql.Connection#close()
+     */
     @Override
     public void close() throws SQLException {
         if (isClosed()) return;
@@ -423,7 +433,9 @@ public abstract class SQLiteConnection implements Connection {
         return db.libversion();
     }
 
-    /** @see java.sql.Connection#commit() */
+    /**
+     * @see java.sql.Connection#commit()
+     */
     @Override
     public void commit() throws SQLException {
         checkOpen();
@@ -434,7 +446,9 @@ public abstract class SQLiteConnection implements Connection {
         this.setCurrentTransactionMode(this.getConnectionConfig().getTransactionMode());
     }
 
-    /** @see java.sql.Connection#rollback() */
+    /**
+     * @see java.sql.Connection#rollback()
+     */
     @Override
     public void rollback() throws SQLException {
         checkOpen();

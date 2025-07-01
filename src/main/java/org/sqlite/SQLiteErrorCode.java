@@ -209,7 +209,9 @@ public enum SQLiteErrorCode {
         return UNKNOWN_ERROR;
     }
 
-    /** @see java.lang.Enum#toString() */
+    /**
+     * @see java.lang.Enum#toString()
+     */
     @Override
     public String toString() {
         return String.format("[%s] %s", this.name(), message);

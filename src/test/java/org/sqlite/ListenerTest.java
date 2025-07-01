@@ -206,7 +206,8 @@ public class ListenerTest {
      * @throws Exception on test failure
      */
     @Test
-    @Disabled("Unnecessary with FFM rewrite: only one update_hook() stub needed per NativeDB instance")
+    @Disabled(
+            "Unnecessary with FFM rewrite: only one update_hook() stub needed per NativeDB instance")
     public void testUpdateHandlerCleanup() throws Exception {
         SQLiteConnection sqliteConnection = connectionOne;
         final DB database = sqliteConnection.getDatabase();
@@ -231,7 +232,8 @@ public class ListenerTest {
      * @throws Exception on test failure
      */
     @Test
-    @Disabled("Unnecessary with FFM rewrite: only one commit_hook() and rollback_hook() stub needed per NativeDB instance")
+    @Disabled(
+            "Unnecessary with FFM rewrite: only one commit_hook() and rollback_hook() stub needed per NativeDB instance")
     public void testCommitHandlerCleanup() throws Exception {
         SQLiteConnection sqliteConnection = connectionOne;
         final DB database = sqliteConnection.getDatabase();

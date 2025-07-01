@@ -6,8 +6,8 @@ import java.sql.SQLException;
 /// A class for safely wrapping calls to a native pointer to a statement, ensuring no other thread
 /// has access to the pointer while it is run
 ///
-/// `sqlite-jdbc-ffm`: Extensive changes have been made to this class's method signatures to replace raw memory address
-/// handling with FFM [MemorySegment]s.
+/// `sqlite-jdbc-ffm`: Extensive changes have been made to this class's method signatures to replace
+/// raw memory address handling with FFM [MemorySegment]s.
 public class SafeStmtPtr {
     // store a reference to the DB, to lock it before any safe function is called. This avoids
     // deadlocking by locking the DB. All calls with the raw pointer are synchronized with the DB

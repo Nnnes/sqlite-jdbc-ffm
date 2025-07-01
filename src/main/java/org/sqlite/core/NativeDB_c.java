@@ -1,10 +1,11 @@
 package org.sqlite.core;
 
-import org.sqlite.BusyHandler;
-import org.sqlite.Collation;
-import org.sqlite.Function;
-import org.sqlite.ProgressHandler;
-import org.sqlite.core.DB.ProgressObserver;
+import static java.lang.foreign.MemorySegment.NULL;
+import static java.lang.foreign.ValueLayout.ADDRESS;
+import static java.lang.foreign.ValueLayout.JAVA_BYTE;
+import static java.lang.foreign.ValueLayout.JAVA_INT;
+import static java.lang.foreign.ValueLayout.JAVA_LONG;
+import static org.sqlite.core.sqlite_h.*;
 
 import java.lang.foreign.Arena;
 import java.lang.foreign.FunctionDescriptor;
@@ -14,19 +15,18 @@ import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
+import org.sqlite.BusyHandler;
+import org.sqlite.Collation;
+import org.sqlite.Function;
+import org.sqlite.ProgressHandler;
+import org.sqlite.core.DB.ProgressObserver;
 
-import static java.lang.foreign.MemorySegment.NULL;
-import static java.lang.foreign.ValueLayout.ADDRESS;
-import static java.lang.foreign.ValueLayout.JAVA_BYTE;
-import static java.lang.foreign.ValueLayout.JAVA_INT;
-import static java.lang.foreign.ValueLayout.JAVA_LONG;
-import static org.sqlite.core.sqlite_h.*;
-
-/// Implements the functionality of the `NativeDB.c` of the original JNI version of `sqlite-jdbc` as closely as is
-/// reasonable using the Java 22+ Foreign Function & Memory API.
+/// Implements the functionality of the `NativeDB.c` of the original JNI version of `sqlite-jdbc` as
+/// closely as is reasonable using the Java 22+ Foreign Function & Memory API.
 ///
-/// The most significant difference is that `NativeDB_c` keeps all pointers inside [MemorySegment]s to avoid the need
-/// to pass raw memory addresses around. This changes many of [SafeStmtPtr]'s public interfaces in particular.
+/// The most significant difference is that `NativeDB_c` keeps all pointers inside [MemorySegment]s
+/// to avoid the need to pass raw memory addresses around. This changes many of [SafeStmtPtr]'s
+/// public interfaces in particular.
 class NativeDB_c implements Codes {
     private final NativeDB $this;
     private final MemorySegment commit_hook;
@@ -38,29 +38,49 @@ class NativeDB_c implements Codes {
         this.$this = $this;
 
         Arena arena = Arena.ofAuto();
-        commit_hook = getUpcallStub((commit_hook) _ -> {
-            $this.onCommit(true);
-            return 0;
-        }, arena);
+        commit_hook =
+                getUpcallStub(
+                        (commit_hook)
+                                _ -> {
+                                    $this.onCommit(true);
+                                    return 0;
+                                },
+                        arena);
         rollback_hook = getUpcallStub((rollback_hook) _ -> $this.onCommit(false), arena);
-        update_hook = getUpcallStub((update_hook) (_, type, database, table, row) -> {
-            try (Arena stringArena = Arena.ofConfined()) {
-                MemorySegment pDatabase = database.reinterpret(Long.MAX_VALUE, stringArena, null);
-                MemorySegment pTable = table.reinterpret(Long.MAX_VALUE, stringArena, null);
-                String databaseString = pDatabase.getString(0, StandardCharsets.UTF_8);
-                String tableString = pTable.getString(0, StandardCharsets.UTF_8);
+        update_hook =
+                getUpcallStub(
+                        (update_hook)
+                                (_, type, database, table, row) -> {
+                                    try (Arena stringArena = Arena.ofConfined()) {
+                                        MemorySegment pDatabase =
+                                                database.reinterpret(
+                                                        Long.MAX_VALUE, stringArena, null);
+                                        MemorySegment pTable =
+                                                table.reinterpret(
+                                                        Long.MAX_VALUE, stringArena, null);
+                                        String databaseString =
+                                                pDatabase.getString(0, StandardCharsets.UTF_8);
+                                        String tableString =
+                                                pTable.getString(0, StandardCharsets.UTF_8);
 
-                $this.onUpdate(type, databaseString, tableString, row);
-            }
-        }, arena);
+                                        $this.onUpdate(type, databaseString, tableString, row);
+                                    }
+                                },
+                        arena);
     }
 
     private static MemorySegment getUpcallStub(UpcallStub function, Arena arena) {
         try {
-            return Linker.nativeLinker().upcallStub(
-                    MethodHandles.lookup().findVirtual(
-                            function.getClass(), "call", function.descriptor().toMethodType()
-                    ).bindTo(function), function.descriptor(), arena);
+            return Linker.nativeLinker()
+                    .upcallStub(
+                            MethodHandles.lookup()
+                                    .findVirtual(
+                                            function.getClass(),
+                                            "call",
+                                            function.descriptor().toMethodType())
+                                    .bindTo(function),
+                            function.descriptor(),
+                            arena);
         } catch (ReflectiveOperationException e) {
             throw new AssertionError(e);
         }
@@ -224,14 +244,16 @@ class NativeDB_c implements Codes {
         str = sqlite3_errmsg(db);
         if (str.address() == NULL.address()) return null;
         try (Arena arena = Arena.ofConfined()) {
-            return str.reinterpret(Long.MAX_VALUE, arena, null).getString(0, StandardCharsets.UTF_8);
+            return str.reinterpret(Long.MAX_VALUE, arena, null)
+                    .getString(0, StandardCharsets.UTF_8);
         }
     }
 
     String libversion() {
         MemorySegment version = sqlite3_libversion();
         try (Arena arena = Arena.ofConfined()) {
-            return version.reinterpret(Long.MAX_VALUE, arena, null).getString(0, StandardCharsets.UTF_8);
+            return version.reinterpret(Long.MAX_VALUE, arena, null)
+                    .getString(0, StandardCharsets.UTF_8);
         }
     }
 
@@ -329,7 +351,8 @@ class NativeDB_c implements Codes {
         str = sqlite3_column_decltype(stmt, col);
         if (str.address() == NULL.address()) return null;
         try (Arena arena = Arena.ofConfined()) {
-            return str.reinterpret(Long.MAX_VALUE, arena, null).getString(0, StandardCharsets.UTF_8);
+            return str.reinterpret(Long.MAX_VALUE, arena, null)
+                    .getString(0, StandardCharsets.UTF_8);
         }
     }
 
@@ -344,7 +367,8 @@ class NativeDB_c implements Codes {
         str = sqlite3_column_table_name(stmt, col);
         if (str.address() == NULL.address()) return null;
         try (Arena arena = Arena.ofConfined()) {
-            return str.reinterpret(Long.MAX_VALUE, arena, null).getString(0, StandardCharsets.UTF_8);
+            return str.reinterpret(Long.MAX_VALUE, arena, null)
+                    .getString(0, StandardCharsets.UTF_8);
         }
     }
 
@@ -360,7 +384,8 @@ class NativeDB_c implements Codes {
         if (str.address() == NULL.address()) return null;
 
         try (Arena arena = Arena.ofConfined()) {
-            return str.reinterpret(Long.MAX_VALUE, arena, null).getString(0, StandardCharsets.UTF_8);
+            return str.reinterpret(Long.MAX_VALUE, arena, null)
+                    .getString(0, StandardCharsets.UTF_8);
         }
     }
 
@@ -515,7 +540,13 @@ class NativeDB_c implements Codes {
             v_bytes = arena.allocateFrom(v, StandardCharsets.UTF_8);
             v_nbytes = Math.toIntExact(v_bytes.elements(JAVA_BYTE).count() - 1);
 
-            rc = sqlite3_bind_text(stmt, pos, v_bytes, v_nbytes, MemorySegment.ofAddress(SQLITE_TRANSIENT));
+            rc =
+                    sqlite3_bind_text(
+                            stmt,
+                            pos,
+                            v_bytes,
+                            v_nbytes,
+                            MemorySegment.ofAddress(SQLITE_TRANSIENT));
         }
         return rc;
     }
@@ -556,7 +587,8 @@ class NativeDB_c implements Codes {
         try (Arena arena = Arena.ofConfined()) {
             value_bytes = arena.allocateFrom(value, StandardCharsets.UTF_8);
             value_nbytes = Math.toIntExact(value_bytes.elements(JAVA_BYTE).count());
-            sqlite3_result_text(context, value_bytes, value_nbytes, MemorySegment.ofAddress(SQLITE_TRANSIENT));
+            sqlite3_result_text(
+                    context, value_bytes, value_nbytes, MemorySegment.ofAddress(SQLITE_TRANSIENT));
         }
     }
 
@@ -655,8 +687,8 @@ class NativeDB_c implements Codes {
     }
 
     int value_type(Function func, int arg) throws SQLException {
-        // FIXME: No NULL guard for the result of tovalue() in NativeDB.c. Likely causes sqlite3 to crash with an
-        //  access violation exception if if is NULL.
+        // FIXME: No NULL guard for the result of tovalue() in NativeDB.c. Likely causes sqlite3 to
+        //  crash with an access violation exception if it is NULL.
         return sqlite3_value_type(tovalue(func, arg));
     }
 
@@ -675,51 +707,73 @@ class NativeDB_c implements Codes {
             if (isAgg) {
                 Method xStepMethod = Function.Aggregate.class.getDeclaredMethod("_xStep");
                 Method xFinalMethod = Function.Aggregate.class.getDeclaredMethod("_xFinal");
-                MemorySegment xStep = getUpcallStub(
-                        (xStep) (context, args, value) -> xCall(context, args, value, func, xStepMethod), func._arena);
-                MemorySegment xFinal = getUpcallStub(
-                        (xFinal) (context) -> xCall(context, 0, NULL, func, xFinalMethod), func._arena);
+                MemorySegment xStep =
+                        getUpcallStub(
+                                (xStep)
+                                        (context, args, value) ->
+                                                xCall(context, args, value, func, xStepMethod),
+                                func._arena);
+                MemorySegment xFinal =
+                        getUpcallStub(
+                                (xFinal) (context) -> xCall(context, 0, NULL, func, xFinalMethod),
+                                func._arena);
                 MemorySegment xValue = NULL;
                 MemorySegment xInverse = NULL;
                 if (isWindow) {
                     Method xValueMethod = Function.Window.class.getDeclaredMethod("_xValue");
                     Method xInverseMethod = Function.Window.class.getDeclaredMethod("_xInverse");
-                    xValue = getUpcallStub(
-                            (xValue) (context) -> xCall(context, 0, NULL, func, xValueMethod), func._arena);
-                    xInverse = getUpcallStub(
-                            (xInverse) (context, args, value) -> xCall(context, args, value, func, xInverseMethod),
-                            func._arena);
+                    xValue =
+                            getUpcallStub(
+                                    (xValue)
+                                            (context) ->
+                                                    xCall(context, 0, NULL, func, xValueMethod),
+                                    func._arena);
+                    xInverse =
+                            getUpcallStub(
+                                    (xInverse)
+                                            (context, args, value) ->
+                                                    xCall(
+                                                            context,
+                                                            args,
+                                                            value,
+                                                            func,
+                                                            xInverseMethod),
+                                    func._arena);
                 }
 
-                ret = sqlite3_create_window_function(
-                        gethandle(),
-                        name_bytes,
-                        nArgs,
-                        SQLITE_UTF16 | flags,
-                        NULL, // UDFData udf
-                        xStep,
-                        xFinal,
-                        xValue,
-                        xInverse,
-                        NULL
-                );
+                ret =
+                        sqlite3_create_window_function(
+                                gethandle(),
+                                name_bytes,
+                                nArgs,
+                                SQLITE_UTF16 | flags,
+                                NULL, // UDFData udf
+                                xStep,
+                                xFinal,
+                                xValue,
+                                xInverse,
+                                NULL);
             } else {
                 Method xFuncMethod = Function.class.getDeclaredMethod("_xFunc");
                 // In NativeDB.c, func is null and the function pointer is passed via context
-                MemorySegment xFunc = getUpcallStub(
-                        (xFunc) (context, args, value) -> xCall(context, args, value, func, xFuncMethod), func._arena);
+                MemorySegment xFunc =
+                        getUpcallStub(
+                                (xFunc)
+                                        (context, args, value) ->
+                                                xCall(context, args, value, func, xFuncMethod),
+                                func._arena);
 
-                ret = sqlite3_create_function_v2(
-                        gethandle(),
-                        name_bytes,
-                        nArgs,
-                        SQLITE_UTF16 | flags,
-                        NULL, // UDFData udf
-                        xFunc,
-                        NULL,
-                        NULL,
-                        NULL
-                );
+                ret =
+                        sqlite3_create_function_v2(
+                                gethandle(),
+                                name_bytes,
+                                nArgs,
+                                SQLITE_UTF16 | flags,
+                                NULL, // UDFData udf
+                                xFunc,
+                                NULL,
+                                NULL,
+                                NULL);
             }
         } catch (ReflectiveOperationException e) {
             throw new AssertionError(e);
@@ -735,9 +789,9 @@ class NativeDB_c implements Codes {
         try (Arena arena = Arena.ofConfined()) {
             name_bytes = arena.allocateFrom(name);
 
-            ret = sqlite3_create_function(
-                    gethandle(), name_bytes, -1, SQLITE_UTF16, NULL, NULL, NULL, NULL
-            );
+            ret =
+                    sqlite3_create_function(
+                            gethandle(), name_bytes, -1, SQLITE_UTF16, NULL, NULL, NULL, NULL);
         }
 
         return ret;
@@ -750,25 +804,37 @@ class NativeDB_c implements Codes {
         try (Arena arena = Arena.ofConfined()) {
             name_bytes = arena.allocateFrom(name, StandardCharsets.UTF_8);
 
-            MemorySegment xCompare = getUpcallStub((xCompare) (_, len1, str1, len2, str2) -> {
-                try (Arena stringArena = Arena.ofConfined()) {
-                    String jstr1 = new String(str1.reinterpret(len1, stringArena, null).toArray(JAVA_BYTE),
-                            StandardCharsets.UTF_8);
-                    String jstr2 = new String(str2.reinterpret(len2, stringArena, null).toArray(JAVA_BYTE),
-                            StandardCharsets.UTF_8);
+            MemorySegment xCompare =
+                    getUpcallStub(
+                            (xCompare)
+                                    (_, len1, str1, len2, str2) -> {
+                                        try (Arena stringArena = Arena.ofConfined()) {
+                                            String jstr1 =
+                                                    new String(
+                                                            str1.reinterpret(
+                                                                            len1, stringArena, null)
+                                                                    .toArray(JAVA_BYTE),
+                                                            StandardCharsets.UTF_8);
+                                            String jstr2 =
+                                                    new String(
+                                                            str2.reinterpret(
+                                                                            len2, stringArena, null)
+                                                                    .toArray(JAVA_BYTE),
+                                                            StandardCharsets.UTF_8);
 
-                    return func._xCompare(jstr1, jstr2);
-                }
-            }, func._arena);
+                                            return func._xCompare(jstr1, jstr2);
+                                        }
+                                    },
+                            func._arena);
 
-            ret = sqlite3_create_collation_v2(
-                    gethandle(),
-                    name_bytes,
-                    SQLITE_UTF8, // NativeDB.c uses SQLITE_UTF16
-                    NULL, // CollationData coll
-                    xCompare,
-                    NULL
-            );
+            ret =
+                    sqlite3_create_collation_v2(
+                            gethandle(),
+                            name_bytes,
+                            SQLITE_UTF8, // NativeDB.c uses SQLITE_UTF16
+                            NULL, // CollationData coll
+                            xCompare,
+                            NULL);
         }
 
         return ret;
@@ -781,9 +847,7 @@ class NativeDB_c implements Codes {
         try (Arena arena = Arena.ofConfined()) {
             name_bytes = arena.allocateFrom(name, StandardCharsets.UTF_8);
 
-            ret = sqlite3_create_collation(
-                    gethandle(), name_bytes, SQLITE_UTF16, NULL, NULL
-            );
+            ret = sqlite3_create_collation(gethandle(), name_bytes, SQLITE_UTF16, NULL, NULL);
         }
 
         return ret;
@@ -808,8 +872,8 @@ class NativeDB_c implements Codes {
             ProgressObserver observer,
             int sleepTimeMillis,
             int nTimeoutLimit,
-            int pagesPerStep
-    ) throws SQLException {
+            int pagesPerStep)
+            throws SQLException {
         if (sqlite3_libversion_number() < 3006011) return SQLITE_INTERNAL;
         int rc;
         MemorySegment pDb;
@@ -830,7 +894,8 @@ class NativeDB_c implements Codes {
             dDBName = arena.allocateFrom(zDBName, StandardCharsets.UTF_8);
 
             int flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;
-            if (sqlite3_strnicmp(dFileName, arena.allocateFrom("file:", StandardCharsets.UTF_8), 5) == 0) {
+            if (sqlite3_strnicmp(dFileName, arena.allocateFrom("file:", StandardCharsets.UTF_8), 5)
+                    == 0) {
                 flags |= SQLITE_OPEN_URI;
             }
             MemorySegment ppFile = arena.allocate(ADDRESS.withTargetLayout(ADDRESS));
@@ -838,8 +903,12 @@ class NativeDB_c implements Codes {
 
             if (rc == SQLITE_OK) {
                 pFile = ppFile.get(ADDRESS, 0);
-                pBackup = sqlite3_backup_init(
-                        pFile, arena.allocateFrom("main", StandardCharsets.UTF_8), pDb, dDBName);
+                pBackup =
+                        sqlite3_backup_init(
+                                pFile,
+                                arena.allocateFrom("main", StandardCharsets.UTF_8),
+                                pDb,
+                                dDBName);
                 if (pBackup.address() != NULL.address()) {
                     copyLoop(pBackup, observer, pagesPerStep, nTimeoutLimit, sleepTimeMillis);
 
@@ -860,8 +929,8 @@ class NativeDB_c implements Codes {
             ProgressObserver observer,
             int sleepTimeMillis,
             int nTimeoutLimit,
-            int pagesPerStep
-    ) throws SQLException {
+            int pagesPerStep)
+            throws SQLException {
         if (sqlite3_libversion_number() < 3006011) return SQLITE_INTERNAL;
         int rc;
         MemorySegment pDb;
@@ -882,7 +951,8 @@ class NativeDB_c implements Codes {
             dDBName = arena.allocateFrom(zDBName, StandardCharsets.UTF_8);
 
             int flags = SQLITE_OPEN_READONLY;
-            if (sqlite3_strnicmp(dFileName, arena.allocateFrom("file:", StandardCharsets.UTF_8), 5) == 0) {
+            if (sqlite3_strnicmp(dFileName, arena.allocateFrom("file:", StandardCharsets.UTF_8), 5)
+                    == 0) {
                 flags |= SQLITE_OPEN_URI;
             }
             MemorySegment ppFile = arena.allocate(ADDRESS.withTargetLayout(ADDRESS));
@@ -890,8 +960,12 @@ class NativeDB_c implements Codes {
 
             if (rc == SQLITE_OK) {
                 pFile = ppFile.get(ADDRESS, 0);
-                pBackup = sqlite3_backup_init(
-                        pDb, dDBName, pFile, arena.allocateFrom("main", StandardCharsets.UTF_8));
+                pBackup =
+                        sqlite3_backup_init(
+                                pDb,
+                                dDBName,
+                                pFile,
+                                arena.allocateFrom("main", StandardCharsets.UTF_8));
                 if (pBackup.address() != NULL.address()) {
                     copyLoop(pBackup, observer, pagesPerStep, nTimeoutLimit, sleepTimeMillis);
                     sqlite3_backup_finish(pBackup);
@@ -945,11 +1019,18 @@ class NativeDB_c implements Codes {
                 pAutoinc = arena.allocate(JAVA_INT);
                 pAutoinc.set(JAVA_INT, 0, 0);
 
-                if (zTableName.address() != NULL.address() && zColumnName.address() != NULL.address()) {
+                if (zTableName.address() != NULL.address()
+                        && zColumnName.address() != NULL.address()) {
                     sqlite3_table_column_metadata(
-                            db, NULL, zTableName, zColumnName,
-                            NULL, NULL, pNotNull, pPrimaryKey, pAutoinc
-                    );
+                            db,
+                            NULL,
+                            zTableName,
+                            zColumnName,
+                            NULL,
+                            NULL,
+                            pNotNull,
+                            pPrimaryKey,
+                            pAutoinc);
                 }
 
                 colDataRaw[0] = pNotNull.get(JAVA_INT, 0) != 0;
@@ -984,7 +1065,8 @@ class NativeDB_c implements Codes {
         }
     }
 
-    void register_progress_handler(int vmCalls, ProgressHandler progressHandler) throws SQLException {
+    void register_progress_handler(int vmCalls, ProgressHandler progressHandler)
+            throws SQLException {
         change_progress_handler(progressHandler, vmCalls);
     }
 
@@ -1017,7 +1099,11 @@ class NativeDB_c implements Codes {
             long size = pSize.get(JAVA_LONG, 0);
 
             byte[] jbuff = new byte[Math.toIntExact(size)];
-            System.arraycopy(buff.reinterpret(size, arena, null).toArray(JAVA_BYTE), 0, jbuff, 0,
+            System.arraycopy(
+                    buff.reinterpret(size, arena, null).toArray(JAVA_BYTE),
+                    0,
+                    jbuff,
+                    0,
                     Math.toIntExact(size));
 
             if (need_free) {
@@ -1048,8 +1134,14 @@ class NativeDB_c implements Codes {
 
             // FIXME: may fail if jschema contains null characters! JNI GetStringUTFChars
             MemorySegment schema = arena.allocateFrom(jschema, StandardCharsets.UTF_8);
-            int ret = sqlite3_deserialize(db, schema, pSqliteBuff, size, size,
-                    SQLITE_DESERIALIZE_FREEONCLOSE | SQLITE_DESERIALIZE_RESIZEABLE);
+            int ret =
+                    sqlite3_deserialize(
+                            db,
+                            schema,
+                            pSqliteBuff,
+                            size,
+                            size,
+                            SQLITE_DESERIALIZE_FREEONCLOSE | SQLITE_DESERIALIZE_RESIZEABLE);
             if (ret != SQLITE_OK) {
                 throwex_errorcode(ret);
             } else {
@@ -1118,12 +1210,14 @@ class NativeDB_c implements Codes {
         }
 
         try (Arena arena = Arena.ofConfined()) {
-            return value_pntr.reinterpret(ADDRESS.byteSize() * numArgs, arena, null)
+            return value_pntr
+                    .reinterpret(ADDRESS.byteSize() * numArgs, arena, null)
                     .getAtIndex(ADDRESS, arg);
         }
     }
 
-    private void change_progress_handler(ProgressHandler progressHandler, int vmCalls) throws SQLException {
+    private void change_progress_handler(ProgressHandler progressHandler, int vmCalls)
+            throws SQLException {
         MemorySegment db;
 
         db = gethandle();
@@ -1135,8 +1229,10 @@ class NativeDB_c implements Codes {
         if ($this.progressHandlerArena != null) $this.progressHandlerArena.close();
         if (progressHandler != null) {
             $this.progressHandlerArena = Arena.ofShared();
-            MemorySegment progress_handler_function = getUpcallStub(
-                    (progress_handler_function) _ -> progressHandler._progress(), $this.progressHandlerArena);
+            MemorySegment progress_handler_function =
+                    getUpcallStub(
+                            (progress_handler_function) _ -> progressHandler._progress(),
+                            $this.progressHandlerArena);
             sqlite3_progress_handler(gethandle(), vmCalls, progress_handler_function, NULL);
         } else {
             $this.progressHandlerArena = null;
@@ -1156,9 +1252,11 @@ class NativeDB_c implements Codes {
         if ($this.busyHandlerArena != null) $this.busyHandlerArena.close();
         if (busyHandler != null) {
             $this.busyHandlerArena = Arena.ofShared();
-            MemorySegment busyHandlerCallBack = getUpcallStub(
-                    (busyHandlerCallBack) (_, nbPrevInvok) -> busyHandler._callback(nbPrevInvok),
-                    $this.busyHandlerArena);
+            MemorySegment busyHandlerCallBack =
+                    getUpcallStub(
+                            (busyHandlerCallBack)
+                                    (_, nbPrevInvok) -> busyHandler._callback(nbPrevInvok),
+                            $this.busyHandlerArena);
             sqlite3_busy_handler(db, busyHandlerCallBack, NULL);
         } else {
             $this.busyHandlerArena = null;
@@ -1176,7 +1274,8 @@ class NativeDB_c implements Codes {
     }
 
     // TODO: rewrite with less reflection
-    private void xCall(MemorySegment context, int args, MemorySegment value, Function func, Method method) {
+    private void xCall(
+            MemorySegment context, int args, MemorySegment value, Function func, Method method) {
         try (Arena arena = Arena.ofConfined()) {
             func._setContext(context);
             func._setValue(value.reinterpret(ADDRESS.byteSize(), arena, null));
@@ -1209,8 +1308,12 @@ class NativeDB_c implements Codes {
         }
     }
 
-    private void copyLoop(MemorySegment pBackup, ProgressObserver progress, int pagesPerStep, int nTimeoutLimit,
-                          int sleepTimeMillis) {
+    private void copyLoop(
+            MemorySegment pBackup,
+            ProgressObserver progress,
+            int pagesPerStep,
+            int nTimeoutLimit,
+            int sleepTimeMillis) {
         int rc;
         int nTimeout = 0;
 
@@ -1246,7 +1349,7 @@ class NativeDB_c implements Codes {
         }
 
         @SuppressWarnings("unused")
-            // UpcallStub.stub() uses via reflection
+        // UpcallStub.stub() uses via reflection
         void call(MemorySegment context, int args, MemorySegment value) throws SQLException;
     }
 
@@ -1257,7 +1360,7 @@ class NativeDB_c implements Codes {
         }
 
         @SuppressWarnings("unused")
-            // UpcallStub.stub() uses via reflection
+        // UpcallStub.stub() uses via reflection
         void call(MemorySegment context, int args, MemorySegment value) throws SQLException;
     }
 
@@ -1268,7 +1371,7 @@ class NativeDB_c implements Codes {
         }
 
         @SuppressWarnings("unused")
-            // UpcallStub.stub() uses via reflection
+        // UpcallStub.stub() uses via reflection
         void call(MemorySegment context, int args, MemorySegment value) throws SQLException;
     }
 
@@ -1279,7 +1382,7 @@ class NativeDB_c implements Codes {
         }
 
         @SuppressWarnings("unused")
-            // UpcallStub.stub() uses via reflection
+        // UpcallStub.stub() uses via reflection
         void call(MemorySegment context) throws SQLException;
     }
 
@@ -1290,7 +1393,7 @@ class NativeDB_c implements Codes {
         }
 
         @SuppressWarnings("unused")
-            // UpcallStub.stub() calls via reflection
+        // UpcallStub.stub() calls via reflection
         void call(MemorySegment context) throws SQLException;
     }
 
@@ -1301,7 +1404,7 @@ class NativeDB_c implements Codes {
         }
 
         @SuppressWarnings("unused")
-            // UpcallStub.stub() calls via reflection
+        // UpcallStub.stub() calls via reflection
         int call(MemorySegment context, int len1, MemorySegment str1, int len2, MemorySegment str2);
     }
 
@@ -1312,7 +1415,7 @@ class NativeDB_c implements Codes {
         }
 
         @SuppressWarnings("unused")
-            // UpcallStub.stub() calls via reflection
+        // UpcallStub.stub() calls via reflection
         int call(MemorySegment pArg);
     }
 
@@ -1323,7 +1426,7 @@ class NativeDB_c implements Codes {
         }
 
         @SuppressWarnings("unused")
-            // UpcallStub.stub() calls via reflection
+        // UpcallStub.stub() calls via reflection
         void call(MemorySegment pArg);
     }
 
@@ -1334,8 +1437,13 @@ class NativeDB_c implements Codes {
         }
 
         @SuppressWarnings("unused")
-            // UpcallStub.stub() calls via reflection
-        void call(MemorySegment context, int type, MemorySegment database, MemorySegment table, long row);
+        // UpcallStub.stub() calls via reflection
+        void call(
+                MemorySegment context,
+                int type,
+                MemorySegment database,
+                MemorySegment table,
+                long row);
     }
 
     @FunctionalInterface
@@ -1345,7 +1453,7 @@ class NativeDB_c implements Codes {
         }
 
         @SuppressWarnings("unused")
-            // UpcallStub.stub() calls via reflection
+        // UpcallStub.stub() calls via reflection
         int call(MemorySegment ctx) throws SQLException;
     }
 
@@ -1356,7 +1464,7 @@ class NativeDB_c implements Codes {
         }
 
         @SuppressWarnings("unused")
-            // UpcallStub.stub() calls via reflection
+        // UpcallStub.stub() calls via reflection
         int call(MemorySegment callback, int nbPrevInvok) throws SQLException;
     }
 }
