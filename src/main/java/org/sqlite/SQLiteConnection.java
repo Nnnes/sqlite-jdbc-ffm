@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -238,8 +239,8 @@ public abstract class SQLiteConnection implements Connection {
                 URL resourceAddr = contextCL.getResource(resourceName);
                 if (resourceAddr == null) {
                     try {
-                        resourceAddr = new URL(resourceName);
-                    } catch (MalformedURLException e) {
+                        resourceAddr = (new URI(resourceName)).toURL();
+                    } catch (MalformedURLException | URISyntaxException e) {
                         throw new SQLException(
                                 String.format("resource %s not found: %s", resourceName, e));
                     }
