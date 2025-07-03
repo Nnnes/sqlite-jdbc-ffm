@@ -45,7 +45,7 @@ public abstract class Collation {
     private SQLiteConnection conn;
     private DB db;
 
-    public Arena _arena = Arena.ofAuto();
+    public final Arena _arena = Arena.ofAuto();
 
     /**
      * Registers a given collation with the connection.
@@ -55,7 +55,7 @@ public abstract class Collation {
      * @param f The collation to register.
      */
     public static final void create(Connection conn, String name, Collation f) throws SQLException {
-        if (conn == null || !(conn instanceof SQLiteConnection)) {
+        if (!(conn instanceof SQLiteConnection)) {
             throw new SQLException("connection must be to an SQLite db");
         }
         if (conn.isClosed()) {
@@ -78,7 +78,7 @@ public abstract class Collation {
      * @throws SQLException
      */
     public static final void destroy(Connection conn, String name) throws SQLException {
-        if (conn == null || !(conn instanceof SQLiteConnection)) {
+        if (!(conn instanceof SQLiteConnection)) {
             throw new SQLException("connection must be to an SQLite db");
         }
         ((SQLiteConnection) conn).getDatabase().destroy_collation(name);

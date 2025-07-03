@@ -646,7 +646,7 @@ public final class NativeDB extends DB {
     }
 
     private String validateName(String nameType, String name) throws SQLException {
-        if (name == null || "".equals(name) || name.getBytes(StandardCharsets.UTF_8).length > 255) {
+        if (name == null || name.isEmpty() || name.getBytes(StandardCharsets.UTF_8).length > 255) {
             throw new SQLException("invalid " + nameType + " name: '" + name + "'");
         }
         return name;

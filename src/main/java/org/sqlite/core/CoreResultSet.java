@@ -172,7 +172,7 @@ public abstract class CoreResultSet implements Codes {
 
     protected int addColumnIndexInCache(String col, int index) {
         if (columnNameToIndex == null) {
-            columnNameToIndex = new HashMap<String, Integer>(cols.length);
+            columnNameToIndex = new HashMap<>(cols.length);
         }
         columnNameToIndex.put(col, index);
         return index;

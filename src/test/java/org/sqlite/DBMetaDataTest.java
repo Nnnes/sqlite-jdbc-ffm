@@ -514,13 +514,11 @@ public class DBMetaDataTest {
             "Issue #1132 - Generated columns with stored in SQLite are not marked as generated")
     public void getColumnsIncludingGeneratedStored() throws SQLException {
         stat.executeUpdate(
-                "create table foo("
-                        + "\n"
-                        + "  id integer primary key,"
-                        + "\n"
-                        + "  bar int not null generated always as (id + 1) stored"
-                        + "\n"
-                        + ");");
+                """
+                        create table foo(
+                          id integer primary key,
+                          bar int not null generated always as (id + 1) stored
+                        );""");
 
         ResultSet rs = meta.getColumns(null, null, "foo", "%");
         assertThat(rs.next()).isTrue();
@@ -1409,8 +1407,12 @@ public class DBMetaDataTest {
                 "create table pk3 (col1, col2, col3, col4, primary key (col3, col2  ));");
         // extra spaces and mixed case are intentional, do not remove!
         stat.executeUpdate(
-                "create table pk4 (col1, col2, col3, col4, "
-                        + "\r\nCONSTraint\r\nnamed  primary\r\n\t\t key   (col3, col2  ));");
+                """
+                        create table pk4 (col1, col2, col3, col4, \
+                        \r
+                        CONSTraint\r
+                        named  primary\r
+                        \t\t key   (col3, col2  ));""");
         // mixed-case table, column and primary key names - GitHub issue #219
         stat.executeUpdate(
                 "CREATE TABLE Pk5 (Col1, Col2, Col3, Col4, CONSTRAINT NamedPk PRIMARY KEY (Col3, Col2));");

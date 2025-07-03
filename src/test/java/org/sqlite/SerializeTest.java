@@ -171,11 +171,8 @@ public class SerializeTest {
             execute(connection, "ATTACH ? AS ?", ":memory:", "a_schema");
             connection.deserialize("a_schema", serialize());
 
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < 500; ++i) { // we want this to be well withing a page
-                sb.append("a");
-            }
-            String s = sb.toString();
+            // we want this to be well withing a page
+            String s = "a".repeat(500);
             assertThatThrownBy(
                             () -> {
                                 //noinspection InfiniteLoopStatement

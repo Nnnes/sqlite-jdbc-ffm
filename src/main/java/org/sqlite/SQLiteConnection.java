@@ -116,7 +116,7 @@ public abstract class SQLiteConnection implements Connection {
 
     @Override
     public DatabaseMetaData getMetaData() throws SQLException {
-        return (DatabaseMetaData) getSQLiteDatabaseMetaData();
+        return getSQLiteDatabaseMetaData();
     }
 
     public String getUrl() {
@@ -261,14 +261,12 @@ public abstract class SQLiteConnection implements Connection {
         }
 
         // load the native DB
-        DB db = null;
+        DB db;
         try {
             NativeDB.load();
             db = new NativeDB(url, fileName, config);
         } catch (Exception e) {
-            SQLException err = new SQLException("Error opening connection");
-            err.initCause(e);
-            throw err;
+            throw new SQLException("Error opening connection", e);
         }
         db.open(fileName, config.getOpenModeFlags());
         return db;
@@ -460,7 +458,8 @@ public abstract class SQLiteConnection implements Connection {
     }
 
     /**
-     * Add a listener for DB update events, see https://www.sqlite.org/c3ref/update_hook.html
+     * Add a listener for DB update events, see <a
+     * href="https://www.sqlite.org/c3ref/update_hook.html">https://www.sqlite.org/c3ref/update_hook.html</a>
      *
      * @param listener The listener to receive update events
      */
@@ -478,8 +477,8 @@ public abstract class SQLiteConnection implements Connection {
     }
 
     /**
-     * Add a listener for DB commit/rollback events, see
-     * https://www.sqlite.org/c3ref/commit_hook.html
+     * Add a listener for DB commit/rollback events, see <a
+     * href="https://www.sqlite.org/c3ref/commit_hook.html">https://www.sqlite.org/c3ref/commit_hook.html</a>
      *
      * @param listener The listener to receive commit events
      */
@@ -514,7 +513,7 @@ public abstract class SQLiteConnection implements Connection {
         }
 
         StringBuilder sb = new StringBuilder();
-        sb.append(filename.substring(0, parameterDelimiter));
+        sb.append(filename, 0, parameterDelimiter);
 
         int nonPragmaCount = 0;
         String[] parameters = filename.substring(parameterDelimiter + 1).split("&");
@@ -558,8 +557,7 @@ public abstract class SQLiteConnection implements Connection {
             }
         }
 
-        final String newFilename = sb.toString();
-        return newFilename;
+        return sb.toString();
     }
 
     protected String transactionPrefix() {

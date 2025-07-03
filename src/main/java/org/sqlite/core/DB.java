@@ -880,25 +880,17 @@ public abstract class DB implements Codes {
      */
     final synchronized int sqlbind(MemorySegment stmt, int pos, Object v) throws SQLException {
         pos++;
-        if (v == null) {
-            return bind_null(stmt, pos);
-        } else if (v instanceof Integer) {
-            return bind_int(stmt, pos, (Integer) v);
-        } else if (v instanceof Short) {
-            return bind_int(stmt, pos, ((Short) v).intValue());
-        } else if (v instanceof Long) {
-            return bind_long(stmt, pos, (Long) v);
-        } else if (v instanceof Float) {
-            return bind_double(stmt, pos, ((Float) v).doubleValue());
-        } else if (v instanceof Double) {
-            return bind_double(stmt, pos, (Double) v);
-        } else if (v instanceof String) {
-            return bind_text(stmt, pos, (String) v);
-        } else if (v instanceof byte[]) {
-            return bind_blob(stmt, pos, (byte[]) v);
-        } else {
-            throw new SQLException("unexpected param type: " + v.getClass());
-        }
+        return switch (v) {
+            case null -> bind_null(stmt, pos);
+            case Integer i -> bind_int(stmt, pos, i);
+            case Short i -> bind_int(stmt, pos, i.intValue());
+            case Long l -> bind_long(stmt, pos, l);
+            case Float aFloat -> bind_double(stmt, pos, aFloat.doubleValue());
+            case Double aDouble -> bind_double(stmt, pos, aDouble);
+            case String s -> bind_text(stmt, pos, s);
+            case byte[] bytes -> bind_blob(stmt, pos, bytes);
+            default -> throw new SQLException("unexpected param type: " + v.getClass());
+        };
     }
 
     /**
@@ -973,21 +965,19 @@ public abstract class DB implements Codes {
     public final synchronized boolean execute(CoreStatement stmt, Object[] vals)
             throws SQLException {
         int statusCode = stmt.pointer.safeRunInt((db, ptr) -> execute(ptr, vals));
-        switch (statusCode & 0xFF) {
-            case SQLITE_DONE:
+        return switch (statusCode & 0xFF) {
+            case SQLITE_DONE -> {
                 ensureAutoCommit(stmt.conn.getAutoCommit());
-                return false;
-            case SQLITE_ROW:
-                return true;
-            case SQLITE_BUSY:
-            case SQLITE_LOCKED:
-            case SQLITE_MISUSE:
-            case SQLITE_CONSTRAINT:
-                throw newSQLException(statusCode);
-            default:
+                yield false;
+            }
+            case SQLITE_ROW -> true;
+            case SQLITE_BUSY, SQLITE_LOCKED, SQLITE_MISUSE, SQLITE_CONSTRAINT ->
+                    throw newSQLException(statusCode);
+            default -> {
                 stmt.pointer.close();
                 throw newSQLException(statusCode);
-        }
+            }
+        };
     }
 
     private synchronized int execute(MemorySegment stmt, Object[] vals) throws SQLException {
@@ -1026,17 +1016,15 @@ public abstract class DB implements Codes {
      */
     final synchronized boolean execute(String sql, boolean autoCommit) throws SQLException {
         int statusCode = _exec(sql);
-        switch (statusCode) {
-            case SQLITE_OK:
-                return false;
-            case SQLITE_DONE:
+        return switch (statusCode) {
+            case SQLITE_OK -> false;
+            case SQLITE_DONE -> {
                 ensureAutoCommit(autoCommit);
-                return false;
-            case SQLITE_ROW:
-                return true;
-            default:
-                throw newSQLException(statusCode);
-        }
+                yield false;
+            }
+            case SQLITE_ROW -> true;
+            default -> throw newSQLException(statusCode);
+        };
     }
 
     /**
@@ -1099,21 +1087,13 @@ public abstract class DB implements Codes {
         }
 
         for (SQLiteUpdateListener listener : listeners) {
-            SQLiteUpdateListener.Type operationType;
-
-            switch (type) {
-                case 18:
-                    operationType = SQLiteUpdateListener.Type.INSERT;
-                    break;
-                case 9:
-                    operationType = SQLiteUpdateListener.Type.DELETE;
-                    break;
-                case 23:
-                    operationType = SQLiteUpdateListener.Type.UPDATE;
-                    break;
-                default:
-                    throw new AssertionError("Unknown type: " + type);
-            }
+            SQLiteUpdateListener.Type operationType =
+                    switch (type) {
+                        case 18 -> SQLiteUpdateListener.Type.INSERT;
+                        case 9 -> SQLiteUpdateListener.Type.DELETE;
+                        case 23 -> SQLiteUpdateListener.Type.UPDATE;
+                        default -> throw new AssertionError("Unknown type: " + type);
+                    };
 
             listener.onUpdate(operationType, database, table, rowId);
         }
@@ -1222,10 +1202,9 @@ public abstract class DB implements Codes {
         ensureBeginAndCommit();
 
         begin.safeRunConsume(
-                (db, beginPtr) -> {
-                    commit.safeRunConsume(
-                            (db2, commitPtr) -> ensureAutocommit(beginPtr, commitPtr));
-                });
+                (db, beginPtr) ->
+                        commit.safeRunConsume(
+                                (db2, commitPtr) -> ensureAutocommit(beginPtr, commitPtr)));
     }
 
     private void ensureBeginAndCommit() throws SQLException {

@@ -17,7 +17,7 @@ public enum SQLiteLimits {
 
     private final int id;
 
-    private SQLiteLimits(int id) {
+    SQLiteLimits(int id) {
         this.id = id;
     }
 

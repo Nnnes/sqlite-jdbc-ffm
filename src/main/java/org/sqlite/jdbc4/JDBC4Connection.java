@@ -75,11 +75,8 @@ public class JDBC4Connection extends JDBC3Connection {
         if (isClosed()) {
             return false;
         }
-        Statement statement = createStatement();
-        try {
+        try (Statement statement = createStatement()) {
             return statement.execute("select 1");
-        } finally {
-            statement.close();
         }
     }
 

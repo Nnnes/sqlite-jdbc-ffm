@@ -11,6 +11,7 @@ package org.sqlite;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -109,6 +110,8 @@ public class BackupTest {
         File tmpFile = File.createTempFile("backup-test", ".sqlite", tempDir);
 
         try (SQLiteConnection conn = JDBC.createConnection("jdbc:sqlite:", new Properties())) {
+            assertNotNull(conn);
+
             // memory DB to file
             try (Statement stmt = conn.createStatement()) {
                 createTableAndInsertRows(stmt);

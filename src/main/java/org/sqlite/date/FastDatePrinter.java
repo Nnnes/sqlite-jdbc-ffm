@@ -18,6 +18,7 @@ package org.sqlite.date;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.DateFormatSymbols;
@@ -89,7 +90,7 @@ public class FastDatePrinter implements DatePrinter, Serializable {
      *
      * @see java.io.Serializable
      */
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     /** FULL locale dependent date or time style. */
     public static final int FULL = DateFormat.FULL;
@@ -141,7 +142,7 @@ public class FastDatePrinter implements DatePrinter, Serializable {
     /** Initializes the instance for first use. */
     private void init() {
         final List<Rule> rulesList = parsePattern();
-        mRules = rulesList.toArray(new Rule[rulesList.size()]);
+        mRules = rulesList.toArray(new Rule[0]);
 
         int len = 0;
         for (int i = mRules.length; --i >= 0; ) {
@@ -161,7 +162,7 @@ public class FastDatePrinter implements DatePrinter, Serializable {
      */
     protected List<Rule> parsePattern() {
         final DateFormatSymbols symbols = new DateFormatSymbols(mLocale);
-        final List<Rule> rules = new ArrayList<Rule>();
+        final List<Rule> rules = new ArrayList<>();
 
         final String[] ERAs = symbols.getEras();
         final String[] months = symbols.getMonths();
@@ -194,7 +195,7 @@ public class FastDatePrinter implements DatePrinter, Serializable {
                     if (tokenLen == 2) {
                         rule = TwoDigitYearField.INSTANCE;
                     } else {
-                        rule = selectNumberRule(Calendar.YEAR, tokenLen < 4 ? 4 : tokenLen);
+                        rule = selectNumberRule(Calendar.YEAR, Math.max(tokenLen, 4));
                     }
                     break;
                 case 'M': // month in year (text and number)
@@ -357,14 +358,11 @@ public class FastDatePrinter implements DatePrinter, Serializable {
      * @return a new rule with the correct padding
      */
     protected NumberRule selectNumberRule(final int field, final int padding) {
-        switch (padding) {
-            case 1:
-                return new UnpaddedNumberField(field);
-            case 2:
-                return new TwoDigitNumberField(field);
-            default:
-                return new PaddedNumberField(field, padding);
-        }
+        return switch (padding) {
+            case 1 -> new UnpaddedNumberField(field);
+            case 2 -> new TwoDigitNumberField(field);
+            default -> new PaddedNumberField(field, padding);
+        };
     }
 
     // Format methods
@@ -379,16 +377,15 @@ public class FastDatePrinter implements DatePrinter, Serializable {
      */
     public StringBuffer format(
             final Object obj, final StringBuffer toAppendTo, final FieldPosition pos) {
-        if (obj instanceof Date) {
-            return format((Date) obj, toAppendTo);
-        } else if (obj instanceof Calendar) {
-            return format((Calendar) obj, toAppendTo);
-        } else if (obj instanceof Long) {
-            return format(((Long) obj).longValue(), toAppendTo);
-        } else {
-            throw new IllegalArgumentException(
-                    "Unknown class: " + (obj == null ? "<null>" : obj.getClass().getName()));
-        }
+        return switch (obj) {
+            case Date date -> format(date, toAppendTo);
+            case Calendar calendar -> format(calendar, toAppendTo);
+            case Long l -> format(l, toAppendTo);
+            case null -> throw new IllegalArgumentException("Unknown class: <null>");
+            default ->
+                    throw new IllegalArgumentException(
+                            "Unknown class: " + obj.getClass().getName());
+        };
     }
 
     /* (non-Javadoc)
@@ -518,10 +515,9 @@ public class FastDatePrinter implements DatePrinter, Serializable {
      */
     @Override
     public boolean equals(final Object obj) {
-        if (obj instanceof FastDatePrinter == false) {
+        if (!(obj instanceof FastDatePrinter other)) {
             return false;
         }
-        final FastDatePrinter other = (FastDatePrinter) obj;
         return mPattern.equals(other.mPattern)
                 && mTimeZone.equals(other.mTimeZone)
                 && mLocale.equals(other.mLocale);
@@ -557,6 +553,7 @@ public class FastDatePrinter implements DatePrinter, Serializable {
      * @throws IOException if there is an IO issue.
      * @throws ClassNotFoundException if a class cannot be found.
      */
+    @Serial
     private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
         init();
@@ -784,9 +781,7 @@ public class FastDatePrinter implements DatePrinter, Serializable {
         /** {@inheritDoc} */
         public final void appendTo(final StringBuffer buffer, int value) {
             // pad the buffer with adequate zeros
-            for (int digit = 0; digit < mSize; ++digit) {
-                buffer.append('0');
-            }
+            buffer.append("0".repeat(Math.max(0, mSize)));
             // backfill the buffer with non-zero digits
             int index = buffer.length();
             for (; value > 0; value /= 10) {
@@ -948,7 +943,7 @@ public class FastDatePrinter implements DatePrinter, Serializable {
     // -----------------------------------------------------------------------
 
     private static final ConcurrentMap<TimeZoneDisplayKey, String> cTimeZoneDisplayCache =
-            new ConcurrentHashMap<TimeZoneDisplayKey, String>(7);
+            new ConcurrentHashMap<>(7);
 
     /**
      * Gets the time zone display name, using a cache for performance.
@@ -1086,16 +1081,12 @@ public class FastDatePrinter implements DatePrinter, Serializable {
          *     such rule exists, an IllegalArgumentException will be thrown.
          */
         static Iso8601_Rule getRule(int tokenLen) {
-            switch (tokenLen) {
-                case 1:
-                    return Iso8601_Rule.ISO8601_HOURS;
-                case 2:
-                    return Iso8601_Rule.ISO8601_HOURS_MINUTES;
-                case 3:
-                    return Iso8601_Rule.ISO8601_HOURS_COLON_MINUTES;
-                default:
-                    throw new IllegalArgumentException("invalid number of X");
-            }
+            return switch (tokenLen) {
+                case 1 -> Iso8601_Rule.ISO8601_HOURS;
+                case 2 -> Iso8601_Rule.ISO8601_HOURS_MINUTES;
+                case 3 -> Iso8601_Rule.ISO8601_HOURS_COLON_MINUTES;
+                default -> throw new IllegalArgumentException("invalid number of X");
+            };
         }
 
         final int length;
@@ -1188,8 +1179,7 @@ public class FastDatePrinter implements DatePrinter, Serializable {
             if (this == obj) {
                 return true;
             }
-            if (obj instanceof TimeZoneDisplayKey) {
-                final TimeZoneDisplayKey other = (TimeZoneDisplayKey) obj;
+            if (obj instanceof TimeZoneDisplayKey other) {
                 return mTimeZone.equals(other.mTimeZone)
                         && mStyle == other.mStyle
                         && mLocale.equals(other.mLocale);

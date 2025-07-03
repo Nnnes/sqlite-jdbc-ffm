@@ -61,7 +61,7 @@ public abstract class Function {
     MemorySegment pValue = MemorySegment.NULL; // pointer sqlite3_value**
     int args = 0;
 
-    public Arena _arena = Arena.ofAuto();
+    public final Arena _arena = Arena.ofAuto();
 
     public void _setContext(MemorySegment pContext) {
         this.pContext = pContext;

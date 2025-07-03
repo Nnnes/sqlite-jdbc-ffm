@@ -180,9 +180,6 @@ public class JDBCTest {
     }
 
     @Test
-    void name() {}
-
-    @Test
     public void jdbcHammer(@TempDir File tempDir) throws Exception {
         final SQLiteDataSource dataSource = createDatasourceWithExplicitReadonly();
         File tempFile = File.createTempFile("myTestDB", ".db", tempDir);

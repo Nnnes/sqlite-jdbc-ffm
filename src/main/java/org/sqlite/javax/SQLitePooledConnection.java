@@ -51,7 +51,7 @@ public class SQLitePooledConnection extends JDBC4PooledConnection {
     protected SQLiteConnection physicalConn;
     protected volatile Connection handleConn;
 
-    protected List<ConnectionEventListener> listeners = new ArrayList<ConnectionEventListener>();
+    protected List<ConnectionEventListener> listeners = new ArrayList<>();
 
     /**
      * Constructor.
@@ -121,11 +121,9 @@ public class SQLitePooledConnection extends JDBC4PooledConnection {
                                             } else if ("isClosed".equals(name)) {
                                                 if (!isClosed)
                                                     isClosed =
-                                                            ((Boolean)
-                                                                            method.invoke(
-                                                                                    physicalConn,
-                                                                                    args))
-                                                                    .booleanValue();
+                                                            (Boolean)
+                                                                    method.invoke(
+                                                                            physicalConn, args);
 
                                                 return isClosed;
                                             }
@@ -267,7 +265,7 @@ class SQLitePooledConnectionHandle extends SQLiteConnection {
 
     @Override
     public int getTransactionIsolation() {
-        return 0;
+        return Connection.TRANSACTION_NONE;
     }
 
     @Override

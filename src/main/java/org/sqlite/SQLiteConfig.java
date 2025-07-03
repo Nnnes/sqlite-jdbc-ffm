@@ -36,7 +36,7 @@ import java.util.TreeSet;
 /**
  * SQLite Configuration
  *
- * <p>See also https://www.sqlite.org/pragma.html
+ * <p>See also <a href="https://www.sqlite.org/pragma.html">https://www.sqlite.org/pragma.html</a>
  *
  * @author leo
  */
@@ -117,13 +117,12 @@ public class SQLiteConfig {
      */
     public void apply(Connection conn) throws SQLException {
 
-        HashSet<String> pragmaParams = new HashSet<String>();
+        HashSet<String> pragmaParams = new HashSet<>();
         for (Pragma each : Pragma.values()) {
             pragmaParams.add(each.pragmaName);
         }
 
-        if (conn instanceof SQLiteConnection) {
-            SQLiteConnection sqliteConn = (SQLiteConnection) conn;
+        if (conn instanceof SQLiteConnection sqliteConn) {
             sqliteConn.setLimit(
                     SQLiteLimits.SQLITE_LIMIT_ATTACHED,
                     parseLimitPragma(Pragma.LIMIT_ATTACHED, DEFAULT_MAX_ATTACHED));
@@ -190,8 +189,7 @@ public class SQLiteConfig {
         pragmaParams.remove(Pragma.JDBC_EXPLICIT_READONLY.pragmaName);
         pragmaParams.remove(Pragma.JDBC_GET_GENERATED_KEYS.pragmaName);
 
-        Statement stat = conn.createStatement();
-        try {
+        try (Statement stat = conn.createStatement()) {
             if (pragmaTable.containsKey(Pragma.PASSWORD.pragmaName)) {
                 String password = pragmaTable.getProperty(Pragma.PASSWORD.pragmaName);
                 if (password != null && !password.isEmpty()) {
@@ -219,10 +217,6 @@ public class SQLiteConfig {
                 if (value != null) {
                     stat.execute(String.format("pragma %s=%s", key, value));
                 }
-            }
-        } finally {
-            if (stat != null) {
-                stat.close();
             }
         }
     }
@@ -361,7 +355,7 @@ public class SQLiteConfig {
         private static final String[] Values = new String[] {"true", "false"};
     }
 
-    static final Set<String> pragmaSet = new TreeSet<String>();
+    static final Set<String> pragmaSet = new TreeSet<>();
 
     static {
         for (SQLiteConfig.Pragma pragma : SQLiteConfig.Pragma.values()) {
@@ -560,14 +554,6 @@ public class SQLiteConfig {
         public final String[] choices;
         public final String description;
 
-        Pragma(String pragmaName) {
-            this(pragmaName, null);
-        }
-
-        Pragma(String pragmaName, String[] choices) {
-            this(pragmaName, null, choices);
-        }
-
         Pragma(String pragmaName, String description, String[] choices) {
             this.pragmaName = pragmaName;
             this.description = description;
@@ -729,8 +715,8 @@ public class SQLiteConfig {
      *
      * @author leo
      */
-    private static interface PragmaValue {
-        public String getValue();
+    private interface PragmaValue {
+        String getValue();
     }
 
     public enum Encoding implements PragmaValue {

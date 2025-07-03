@@ -25,17 +25,18 @@ import org.junit.jupiter.api.Test;
 
 /** These tests are designed to stress PreparedStatements on memory dbs. */
 public class PrepStmtTest {
-    static byte[] b1 = new byte[] {1, 2, 7, 4, 2, 6, 2, 8, 5, 2, 3, 1, 5, 3, 6, 3, 3, 6, 2, 5};
-    static byte[] b2 = getUtf8Bytes("To be or not to be.");
-    static byte[] b3 = getUtf8Bytes("Question!#$%");
-    static String utf01 = "\uD840\uDC40";
-    static String utf02 = "\uD840\uDC47 ";
-    static String utf03 = " \uD840\uDC43";
-    static String utf04 = " \uD840\uDC42 ";
-    static String utf05 = "\uD840\uDC40\uD840\uDC44";
-    static String utf06 = "Hello World, \uD840\uDC40 \uD880\uDC99";
-    static String utf07 = "\uD840\uDC41 testing \uD880\uDC99";
-    static String utf08 = "\uD840\uDC40\uD840\uDC44 testing";
+    static final byte[] b1 =
+            new byte[] {1, 2, 7, 4, 2, 6, 2, 8, 5, 2, 3, 1, 5, 3, 6, 3, 3, 6, 2, 5};
+    static final byte[] b2 = getUtf8Bytes("To be or not to be.");
+    static final byte[] b3 = getUtf8Bytes("Question!#$%");
+    static final String utf01 = "\uD840\uDC40";
+    static final String utf02 = "\uD840\uDC47 ";
+    static final String utf03 = " \uD840\uDC43";
+    static final String utf04 = " \uD840\uDC42 ";
+    static final String utf05 = "\uD840\uDC40\uD840\uDC44";
+    static final String utf06 = "Hello World, \uD840\uDC40 \uD880\uDC99";
+    static final String utf07 = "\uD840\uDC41 testing \uD880\uDC99";
+    static final String utf08 = "\uD840\uDC40\uD840\uDC44 testing";
 
     private Connection conn;
     private Statement stat;

@@ -64,12 +64,11 @@ public class ExceptionUtils {
      * exceptions as checked.
      *
      * @since 3.5
-     * @see {{@link #wrapAndThrow(Throwable)}
      * @param throwable The throwable to rethrow.
      * @return R Never actually returns, this generic type matches any type which the calling site
      *     requires. "Returning" the results of this method, as done in the propagateExample above,
      *     will satisfy the java compiler requirement that all code paths return a value.
-     * @throws throwable
+     * @throws Throwable
      */
     public static <R> R rethrow(Throwable throwable) {
         // claim that the typeErasure invocation throws a RuntimeException

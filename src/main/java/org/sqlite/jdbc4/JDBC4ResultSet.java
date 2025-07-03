@@ -5,10 +5,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.StringReader;
-import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.math.BigDecimal;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.sql.Array;
 import java.sql.Blob;
 import java.sql.Clob;
@@ -41,8 +41,7 @@ public class JDBC4ResultSet extends JDBC3ResultSet implements ResultSet, ResultS
         final boolean wasOpen = isOpen(); // prevent close() recursion
         super.close();
         // close-on-completion regardless of closeStmt
-        if (wasOpen && stmt instanceof JDBC4Statement) {
-            JDBC4Statement stat = (JDBC4Statement) stmt;
+        if (wasOpen && stmt instanceof JDBC4Statement stat) {
             // check if its not closed already in which case no-op
             if (stat.closeOnCompletion && !stat.isClosed()) {
                 stat.close();
@@ -157,8 +156,7 @@ public class JDBC4ResultSet extends JDBC3ResultSet implements ResultSet, ResultS
         if (data == null) {
             return null;
         }
-        Reader reader = new StringReader(data);
-        return reader;
+        return new StringReader(data);
     }
 
     public Reader getNCharacterStream(String col) throws SQLException {
@@ -413,11 +411,7 @@ public class JDBC4ResultSet extends JDBC3ResultSet implements ResultSet, ResultS
             return null;
         }
         InputStream inputStream;
-        try {
-            inputStream = new ByteArrayInputStream(data.getBytes("ASCII"));
-        } catch (UnsupportedEncodingException e) {
-            return null;
-        }
+        inputStream = new ByteArrayInputStream(data.getBytes(StandardCharsets.US_ASCII));
         return inputStream;
     }
 
@@ -449,12 +443,10 @@ public class JDBC4ResultSet extends JDBC3ResultSet implements ResultSet, ResultS
         return clob == null ? null : new SqliteClob(clob);
     }
 
-    @SuppressWarnings("rawtypes")
     public Object getObject(int col, Map map) throws SQLException {
         throw unsupported();
     }
 
-    @SuppressWarnings("rawtypes")
     public Object getObject(String col, Map map) throws SQLException {
         throw unsupported();
     }

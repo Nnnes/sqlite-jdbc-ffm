@@ -16,6 +16,7 @@
  */
 package org.sqlite.date;
 
+import java.io.Serial;
 import java.text.DateFormat;
 import java.text.FieldPosition;
 import java.text.Format;
@@ -70,7 +71,7 @@ public class FastDateFormat extends Format implements DateParser, DatePrinter {
      *
      * @see java.io.Serializable
      */
-    private static final long serialVersionUID = 2L;
+    @Serial private static final long serialVersionUID = 2L;
 
     /** FULL locale dependent date or time style. */
     public static final int FULL = DateFormat.FULL;
@@ -85,7 +86,7 @@ public class FastDateFormat extends Format implements DateParser, DatePrinter {
     public static final int SHORT = DateFormat.SHORT;
 
     private static final FormatCache<FastDateFormat> cache =
-            new FormatCache<FastDateFormat>() {
+            new FormatCache<>() {
                 @Override
                 protected FastDateFormat createInstance(
                         final String pattern, final TimeZone timeZone, final Locale locale) {
@@ -519,10 +520,9 @@ public class FastDateFormat extends Format implements DateParser, DatePrinter {
      */
     @Override
     public boolean equals(final Object obj) {
-        if (obj instanceof FastDateFormat == false) {
+        if (!(obj instanceof FastDateFormat other)) {
             return false;
         }
-        final FastDateFormat other = (FastDateFormat) obj;
         // no need to check parser, as it has same invariants as printer
         return printer.equals(other.printer);
     }

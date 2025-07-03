@@ -18,6 +18,7 @@ import java.sql.Types;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.sqlite.core.CoreResultSet;
@@ -73,18 +74,20 @@ public abstract class JDBC3ResultSet extends CoreResultSet {
 
         // do the real work
         int statusCode = stmt.pointer.safeRunInt(DB::step);
-        switch (statusCode) {
-            case SQLITE_DONE:
+        return switch (statusCode) {
+            case SQLITE_DONE -> {
                 pastLastRow = true;
-                return false;
-            case SQLITE_ROW:
+                yield false;
+            }
+            case SQLITE_ROW -> {
                 row++;
-                return true;
-            case SQLITE_BUSY:
-            default:
+                yield true;
+            }
+            default -> {
                 getDatabase().throwex(statusCode);
-                return false;
-        }
+                yield false;
+            }
+        };
     }
 
     /**
@@ -608,12 +611,12 @@ public abstract class JDBC3ResultSet extends CoreResultSet {
             case SQLITE_INTEGER:
                 long val = getLong(col);
                 if (val > Integer.MAX_VALUE || val < Integer.MIN_VALUE) {
-                    return Long.valueOf(val);
+                    return val;
                 } else {
-                    return Integer.valueOf((int) val);
+                    return (int) val;
                 }
             case SQLITE_FLOAT:
-                return Double.valueOf(getDouble(col));
+                return getDouble(col);
             case SQLITE_BLOB:
                 return getBytes(col);
             case SQLITE_NULL:
@@ -866,19 +869,13 @@ public abstract class JDBC3ResultSet extends CoreResultSet {
             return matcher.group(1).toUpperCase(Locale.ENGLISH);
         }
 
-        switch (safeGetColumnType(checkCol(col))) {
-            case SQLITE_INTEGER:
-                return "INTEGER";
-            case SQLITE_FLOAT:
-                return "FLOAT";
-            case SQLITE_BLOB:
-                return "BLOB";
-            case SQLITE_TEXT:
-                return "TEXT";
-            case SQLITE_NULL:
-            default:
-                return "NUMERIC";
-        }
+        return switch (safeGetColumnType(checkCol(col))) {
+            case SQLITE_INTEGER -> "INTEGER";
+            case SQLITE_FLOAT -> "FLOAT";
+            case SQLITE_BLOB -> "BLOB";
+            case SQLITE_TEXT -> "TEXT";
+            default -> "NUMERIC";
+        };
     }
 
     /**
@@ -940,11 +937,8 @@ public abstract class JDBC3ResultSet extends CoreResultSet {
      */
     public String getTableName(int col) throws SQLException {
         final String tableName = safeGetColumnTableName(col);
-        if (tableName == null) {
-            // JDBC specifies an empty string instead of null
-            return "";
-        }
-        return tableName;
+        // JDBC specifies an empty string instead of null
+        return Objects.requireNonNullElse(tableName, "");
     }
 
     /**
@@ -1051,8 +1045,8 @@ public abstract class JDBC3ResultSet extends CoreResultSet {
 
     /**
      * Transforms a Julian Date to java.util.Calendar object. Based on Guine Christian's function
-     * found here:
-     * http://java.ittoolbox.com/groups/technical-functional/java-l/java-function-to-convert-julian-date-to-calendar-date-1947446
+     * found here: <a
+     * href="http://java.ittoolbox.com/groups/technical-functional/java-l/java-function-to-convert-julian-date-to-calendar-date-1947446">http://java.ittoolbox.com/groups/technical-functional/java-l/java-function-to-convert-julian-date-to-calendar-date-1947446</a>
      */
     private Calendar julianDateToCalendar(Double jd, Calendar cal) {
         if (jd == null) {

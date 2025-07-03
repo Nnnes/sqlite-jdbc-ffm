@@ -3,9 +3,9 @@ package org.sqlite.jdbc3;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
-import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.sql.Array;
 import java.sql.Blob;
 import java.sql.Clob;
@@ -294,10 +294,7 @@ public abstract class JDBC3PreparedStatement extends CorePreparedStatement {
 
             return bytes;
         } catch (IOException cause) {
-            SQLException exception = new SQLException("Error reading stream");
-
-            exception.initCause(cause);
-            throw exception;
+            throw new SQLException("Error reading stream", cause);
         }
     }
 
@@ -327,14 +324,7 @@ public abstract class JDBC3PreparedStatement extends CorePreparedStatement {
             setString(pos, null);
         }
 
-        try {
-            setString(pos, new String(readBytes(istream, length), "UTF-8"));
-        } catch (UnsupportedEncodingException e) {
-            SQLException exception = new SQLException("UTF-8 is not supported");
-
-            exception.initCause(e);
-            throw exception;
-        }
+        setString(pos, new String(readBytes(istream, length), StandardCharsets.UTF_8));
     }
 
     /**
@@ -362,28 +352,28 @@ public abstract class JDBC3PreparedStatement extends CorePreparedStatement {
      * @see java.sql.PreparedStatement#setDouble(int, double)
      */
     public void setDouble(int pos, double value) throws SQLException {
-        batch(pos, Double.valueOf(value));
+        batch(pos, value);
     }
 
     /**
      * @see java.sql.PreparedStatement#setFloat(int, float)
      */
     public void setFloat(int pos, float value) throws SQLException {
-        batch(pos, Float.valueOf(value));
+        batch(pos, value);
     }
 
     /**
      * @see java.sql.PreparedStatement#setInt(int, int)
      */
     public void setInt(int pos, int value) throws SQLException {
-        batch(pos, Integer.valueOf(value));
+        batch(pos, value);
     }
 
     /**
      * @see java.sql.PreparedStatement#setLong(int, long)
      */
     public void setLong(int pos, long value) throws SQLException {
-        batch(pos, Long.valueOf(value));
+        batch(pos, value);
     }
 
     /**
@@ -404,28 +394,19 @@ public abstract class JDBC3PreparedStatement extends CorePreparedStatement {
      * @see java.sql.PreparedStatement#setObject(int, java.lang.Object)
      */
     public void setObject(int pos, Object value) throws SQLException {
-        if (value == null) {
-            batch(pos, null);
-        } else if (value instanceof java.util.Date) {
-            setDateByMilliseconds(pos, ((java.util.Date) value).getTime(), Calendar.getInstance());
-        } else if (value instanceof Long) {
-            batch(pos, value);
-        } else if (value instanceof Integer) {
-            batch(pos, value);
-        } else if (value instanceof Short) {
-            batch(pos, Integer.valueOf(((Short) value).intValue()));
-        } else if (value instanceof Float) {
-            batch(pos, value);
-        } else if (value instanceof Double) {
-            batch(pos, value);
-        } else if (value instanceof Boolean) {
-            setBoolean(pos, ((Boolean) value).booleanValue());
-        } else if (value instanceof byte[]) {
-            batch(pos, value);
-        } else if (value instanceof BigDecimal) {
-            setBigDecimal(pos, (BigDecimal) value);
-        } else {
-            batch(pos, value.toString());
+        switch (value) {
+            case null -> batch(pos, null);
+            case java.util.Date date ->
+                    setDateByMilliseconds(pos, date.getTime(), Calendar.getInstance());
+            case Long l -> batch(pos, value);
+            case Integer i -> batch(pos, value);
+            case Short i -> batch(pos, Integer.valueOf(i));
+            case Float v -> batch(pos, value);
+            case Double v -> batch(pos, value);
+            case Boolean b -> setBoolean(pos, b);
+            case byte[] bytes -> batch(pos, value);
+            case BigDecimal bigDecimal -> setBigDecimal(pos, bigDecimal);
+            default -> batch(pos, value.toString());
         }
     }
 
@@ -462,8 +443,8 @@ public abstract class JDBC3PreparedStatement extends CorePreparedStatement {
      */
     public void setCharacterStream(int pos, Reader reader, int length) throws SQLException {
         try {
-            // copy chars from reader to StringBuffer
-            StringBuffer sb = new StringBuffer();
+            // copy chars from reader to StringBuilder
+            StringBuilder sb = new StringBuilder();
             char[] cbuf = new char[8192];
             int cnt;
 

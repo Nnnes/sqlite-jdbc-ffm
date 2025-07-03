@@ -38,6 +38,7 @@ import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -77,8 +78,7 @@ public class MultipleClassLoaderTest {
     @Test
     public void multipleClassLoader() throws Throwable {
         // Get current classpath
-        String[] stringUrls =
-                System.getProperty("java.class.path").split(System.getProperty("path.separator"));
+        String[] stringUrls = System.getProperty("java.class.path").split(File.pathSeparator);
         // Find the classes under test.
         String targetFolderName =
                 Paths.get("").toAbsolutePath().resolve(Paths.get("target", "classes")).toString();
@@ -100,7 +100,7 @@ public class MultipleClassLoaderTest {
         String targetSlf4j = Paths.get("org", "slf4j", "slf4j-api").toString();
         Optional<String> slf4jApi =
                 Arrays.stream(stringUrls).filter(s -> s.contains(targetSlf4j)).findFirst();
-        if (!slf4jApi.isPresent()) fail("Couldn't find slf4j-api");
+        if (slf4jApi.isEmpty()) fail("Couldn't find slf4j-api");
 
         // Create a JAR file out the classes and resources
         File jarFile = File.createTempFile("jar-for-test-", ".jar");
@@ -161,7 +161,7 @@ public class MultipleClassLoaderTest {
                     target.putNextEntry(entry);
                     target.closeEntry();
                 }
-                for (File nestedFile : source.listFiles()) {
+                for (File nestedFile : Objects.requireNonNull(source.listFiles())) {
                     addJarEntry(nestedFile, changeDir, target);
                 }
                 return;

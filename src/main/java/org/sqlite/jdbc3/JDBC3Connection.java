@@ -45,7 +45,6 @@ public abstract class JDBC3Connection extends SQLiteConnection {
      * @throws SQLException if a statement has already been executed on this connection, then the
      *     transaction cannot be upgraded to write
      */
-    @SuppressWarnings("deprecation")
     public void tryEnforceTransactionMode() throws SQLException {
         // important note: read-only mode is only supported when auto-commit is disabled
         if (getDatabase().getConfig().isExplicitReadOnly()
@@ -118,7 +117,7 @@ public abstract class JDBC3Connection extends SQLiteConnection {
     public Map<String, Class<?>> getTypeMap() throws SQLException {
         synchronized (this) {
             if (this.typeMap == null) {
-                this.typeMap = new HashMap<String, Class<?>>();
+                this.typeMap = new HashMap<>();
             }
 
             return this.typeMap;
@@ -128,7 +127,7 @@ public abstract class JDBC3Connection extends SQLiteConnection {
     /**
      * @see java.sql.Connection#setTypeMap(java.util.Map)
      */
-    public void setTypeMap(Map map) throws SQLException {
+    public void setTypeMap(Map<String, Class<?>> map) throws SQLException {
         synchronized (this) {
             this.typeMap = map;
         }

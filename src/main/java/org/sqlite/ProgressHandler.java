@@ -3,7 +3,10 @@ package org.sqlite;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-/** https://www.sqlite.org/c3ref/progress_handler.html */
+/**
+ * <a
+ * href="https://www.sqlite.org/c3ref/progress_handler.html">https://www.sqlite.org/c3ref/progress_handler.html</a>
+ */
 public abstract class ProgressHandler {
     /**
      * Sets a progress handler for the connection.
@@ -16,13 +19,12 @@ public abstract class ProgressHandler {
      */
     public static final void setHandler(
             Connection conn, int vmCalls, ProgressHandler progressHandler) throws SQLException {
-        if (!(conn instanceof SQLiteConnection)) {
+        if (!(conn instanceof SQLiteConnection sqliteConnection)) {
             throw new SQLException("connection must be to an SQLite db");
         }
         if (conn.isClosed()) {
             throw new SQLException("connection closed");
         }
-        SQLiteConnection sqliteConnection = (SQLiteConnection) conn;
         sqliteConnection.getDatabase().register_progress_handler(vmCalls, progressHandler);
     }
 

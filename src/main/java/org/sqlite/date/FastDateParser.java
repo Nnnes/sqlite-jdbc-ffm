@@ -18,6 +18,7 @@ package org.sqlite.date;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.io.Serializable;
 import java.text.DateFormatSymbols;
 import java.text.ParseException;
@@ -71,7 +72,7 @@ public class FastDateParser implements DateParser, Serializable {
      *
      * @see java.io.Serializable
      */
-    private static final long serialVersionUID = 2L;
+    @Serial private static final long serialVersionUID = 2L;
 
     static final Locale JAPANESE_IMPERIAL = Locale.of("ja", "JP", "JP");
 
@@ -149,7 +150,7 @@ public class FastDateParser implements DateParser, Serializable {
     private void init(final Calendar definingCalendar) {
 
         final StringBuilder regex = new StringBuilder();
-        final List<Strategy> collector = new ArrayList<Strategy>();
+        final List<Strategy> collector = new ArrayList<>();
 
         final Matcher patternMatcher = formatPattern.matcher(pattern);
         if (!patternMatcher.lookingAt()) {
@@ -186,7 +187,7 @@ public class FastDateParser implements DateParser, Serializable {
             collector.add(currentStrategy);
         }
         currentFormatField = null;
-        strategies = collector.toArray(new Strategy[collector.size()]);
+        strategies = collector.toArray(new Strategy[0]);
         parsePattern = Pattern.compile(regex.toString());
     }
 
@@ -232,10 +233,9 @@ public class FastDateParser implements DateParser, Serializable {
      */
     @Override
     public boolean equals(final Object obj) {
-        if (!(obj instanceof FastDateParser)) {
+        if (!(obj instanceof FastDateParser other)) {
             return false;
         }
-        final FastDateParser other = (FastDateParser) obj;
         return pattern.equals(other.pattern)
                 && timeZone.equals(other.timeZone)
                 && locale.equals(other.locale);
@@ -271,6 +271,7 @@ public class FastDateParser implements DateParser, Serializable {
      * @throws IOException if there is an IO issue.
      * @throws ClassNotFoundException if a class cannot be found.
      */
+    @Serial
     private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
 
@@ -563,7 +564,7 @@ public class FastDateParser implements DateParser, Serializable {
     private static ConcurrentMap<Locale, Strategy> getCache(final int field) {
         synchronized (caches) {
             if (caches[field] == null) {
-                caches[field] = new ConcurrentHashMap<Locale, Strategy>(3);
+                caches[field] = new ConcurrentHashMap<>(3);
             }
             return caches[field];
         }
@@ -641,7 +642,7 @@ public class FastDateParser implements DateParser, Serializable {
             this.field = field;
             this.locale = locale;
             final Map<String, Integer> keyValues = getDisplayNames(field, definingCalendar, locale);
-            this.lKeyValues = new HashMap<String, Integer>();
+            this.lKeyValues = new HashMap<>();
 
             for (final Map.Entry<String, Integer> entry : keyValues.entrySet()) {
                 lKeyValues.put(entry.getKey().toLowerCase(locale), entry.getValue());
@@ -672,7 +673,7 @@ public class FastDateParser implements DateParser, Serializable {
                 sb.setCharAt(sb.length() - 1, ')');
                 throw new IllegalArgumentException(sb.toString());
             }
-            cal.set(field, iVal.intValue());
+            cal.set(field, iVal);
         }
     }
 
@@ -744,7 +745,7 @@ public class FastDateParser implements DateParser, Serializable {
 
         private final String validTimeZoneChars;
         private final SortedMap<String, TimeZone> tzNames =
-                new TreeMap<String, TimeZone>(String.CASE_INSENSITIVE_ORDER);
+                new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
         /** Index of zone id */
         private static final int ID = 0;
@@ -869,16 +870,12 @@ public class FastDateParser implements DateParser, Serializable {
          *     tokenLen}. If no such strategy exists, an IllegalArgumentException will be thrown.
          */
         static Strategy getStrategy(int tokenLen) {
-            switch (tokenLen) {
-                case 1:
-                    return ISO_8601_1_STRATEGY;
-                case 2:
-                    return ISO_8601_2_STRATEGY;
-                case 3:
-                    return ISO_8601_3_STRATEGY;
-                default:
-                    throw new IllegalArgumentException("invalid number of X");
-            }
+            return switch (tokenLen) {
+                case 1 -> ISO_8601_1_STRATEGY;
+                case 2 -> ISO_8601_2_STRATEGY;
+                case 3 -> ISO_8601_3_STRATEGY;
+                default -> throw new IllegalArgumentException("invalid number of X");
+            };
         }
     }
 

@@ -243,7 +243,7 @@ public abstract class JDBC3Statement extends CoreStatement {
      */
     public void clearBatch() throws SQLException {
         batchPos = 0;
-        if (batch != null) for (int i = 0; i < batch.length; i++) batch[i] = null;
+        if (batch != null) Arrays.fill(batch, null);
     }
 
     /**

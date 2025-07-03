@@ -27,7 +27,8 @@ package org.sqlite;
 /**
  * Database file open modes of SQLite.
  *
- * <p>See also https://www.sqlite.org/c3ref/open.html
+ * <p>See also <a
+ * href="https://www.sqlite.org/c3ref/open.html">https://www.sqlite.org/c3ref/open.html</a>
  *
  * @author leo
  */
@@ -53,7 +54,7 @@ public enum SQLiteOpenMode {
 
     public final int flag;
 
-    private SQLiteOpenMode(int flag) {
+    SQLiteOpenMode(int flag) {
         this.flag = flag;
     }
 }

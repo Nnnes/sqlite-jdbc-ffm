@@ -13,7 +13,6 @@ import java.io.File;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -27,9 +26,6 @@ public class InsertQueryTest {
         File tmpFile = File.createTempFile("tmp-sqlite", ".db", tempDir);
         dbName = tmpFile.getAbsolutePath();
     }
-
-    @AfterEach
-    public void tearDown() throws Exception {}
 
     interface ConnectionFactory {
         Connection getConnection() throws SQLException;
@@ -164,15 +160,13 @@ public class InsertQueryTest {
 
             //
             PreparedStatement stat;
-            Long result = 0L;
             String query = "SELECT COUNT(fid) FROM data";
 
             stat = factory.getConnection().prepareStatement(query);
             ResultSet rs = stat.executeQuery();
 
             rs.next();
-            result = rs.getLong(1);
-            // System.out.println("count = " + result);
+            // System.out.println("count = " + rs.getLong(1));
 
             rs.close();
             stat.close();

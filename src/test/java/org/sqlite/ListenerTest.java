@@ -71,9 +71,9 @@ public class ListenerTest {
         if (updates.isEmpty()) throw new AssertionError("Never got update!");
 
         assertThat(updates.size()).isEqualTo(1);
-        assertThat(updates.get(0).table).isEqualTo("sample");
-        assertThat(updates.get(0).rowId).isEqualTo(1);
-        assertThat(updates.get(0).type).isEqualTo(SQLiteUpdateListener.Type.INSERT);
+        assertThat(updates.getFirst().table).isEqualTo("sample");
+        assertThat(updates.getFirst().rowId).isEqualTo(1);
+        assertThat(updates.getFirst().type).isEqualTo(SQLiteUpdateListener.Type.INSERT);
 
         updates.clear();
 
@@ -119,9 +119,9 @@ public class ListenerTest {
         if (updates.isEmpty()) throw new AssertionError("Never got update!");
 
         assertThat(updates.size()).isEqualTo(1);
-        assertThat(updates.get(0).table).isEqualTo("sample");
-        assertThat(updates.get(0).rowId).isEqualTo(1);
-        assertThat(updates.get(0).type).isEqualTo(SQLiteUpdateListener.Type.INSERT);
+        assertThat(updates.getFirst().table).isEqualTo("sample");
+        assertThat(updates.getFirst().rowId).isEqualTo(1);
+        assertThat(updates.getFirst().type).isEqualTo(SQLiteUpdateListener.Type.INSERT);
         assertThat(commitListener1.getNumCommits()).isEqualTo(1);
 
         Statement secondStatement = connectionTwo.createStatement();
@@ -281,18 +281,6 @@ public class ListenerTest {
      * A helper class that stores information about an update event, to validate that the update
      * callbacks work as expected
      */
-    private static class UpdateEvent {
-        private final SQLiteUpdateListener.Type type;
-        private final String database;
-        private final String table;
-        private final long rowId;
-
-        private UpdateEvent(
-                SQLiteUpdateListener.Type type, String database, String table, long rowId) {
-            this.type = type;
-            this.database = database;
-            this.table = table;
-            this.rowId = rowId;
-        }
-    }
+    private record UpdateEvent(
+            SQLiteUpdateListener.Type type, String database, String table, long rowId) {}
 }

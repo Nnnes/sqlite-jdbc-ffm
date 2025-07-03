@@ -1,6 +1,7 @@
 package org.sqlite;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -227,6 +228,7 @@ public class ConnectionTest {
 
     public static File copyToTemp(String fileName) throws IOException {
         InputStream in = ConnectionTest.class.getResourceAsStream(fileName);
+        assertNotNull(in);
 
         File tmp = File.createTempFile(fileName, "", tempDir);
         tmp.deleteOnExit();

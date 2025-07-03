@@ -112,9 +112,9 @@ class ResultSetTest {
     }
 
     /**
-     * Can't produce a case where column name contains table name
-     * https://www.sqlite.org/c3ref/column_name.html : "If there is no AS clause then the name of
-     * the column is unspecified"
+     * Can't produce a case where column name contains table name <a
+     * href="https://www.sqlite.org/c3ref/column_name.html">https://www.sqlite.org/c3ref/column_name.html</a>
+     * : "If there is no AS clause then the name of the column is unspecified"
      */
     @Test
     void testSelectWithTableNameAliasNowNotFindWithTableNameAlias() throws SQLException {

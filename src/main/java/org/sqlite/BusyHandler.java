@@ -3,7 +3,10 @@ package org.sqlite;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-/** https://www.sqlite.org/c3ref/busy_handler.html */
+/**
+ * <a
+ * href="https://www.sqlite.org/c3ref/busy_handler.html">https://www.sqlite.org/c3ref/busy_handler.html</a>
+ */
 public abstract class BusyHandler {
 
     /**
@@ -16,7 +19,7 @@ public abstract class BusyHandler {
     private static void commitHandler(Connection conn, BusyHandler busyHandler)
             throws SQLException {
 
-        if (!(conn instanceof SQLiteConnection)) {
+        if (!(conn instanceof SQLiteConnection sqliteConnection)) {
             throw new SQLException("connection must be to an SQLite db");
         }
 
@@ -24,7 +27,6 @@ public abstract class BusyHandler {
             throw new SQLException("connection closed");
         }
 
-        SQLiteConnection sqliteConnection = (SQLiteConnection) conn;
         sqliteConnection.getDatabase().busy_handler(busyHandler);
     }
 
@@ -51,7 +53,8 @@ public abstract class BusyHandler {
     }
 
     /**
-     * https://www.sqlite.org/c3ref/busy_handler.html
+     * <a
+     * href="https://www.sqlite.org/c3ref/busy_handler.html">https://www.sqlite.org/c3ref/busy_handler.html</a>
      *
      * @param nbPrevInvok number of times that the busy handler has been invoked previously for the
      *     same locking event

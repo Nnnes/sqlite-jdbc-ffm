@@ -228,7 +228,8 @@ public class OSInfo {
             String javaHome = System.getProperty("java.home");
             try {
                 // determine if first JVM found uses ARM hard-float ABI
-                int exitCode = Runtime.getRuntime().exec("which readelf").waitFor();
+                int exitCode =
+                        Runtime.getRuntime().exec(new String[] {"which", "readelf"}).waitFor();
                 if (exitCode == 0) {
                     String[] cmdarray = {
                         "/bin/sh",

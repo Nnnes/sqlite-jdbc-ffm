@@ -55,10 +55,10 @@ try (
 
 ## Creating BLOB data
 1. Create a table with a column of blob type: `create table T (id integer, data blob)`
-1. Create a prepared statement with `?` symbol: `insert into T values(1, ?)`
-1. Prepare a blob data in byte array (e.g., `byte[] data = ...`)
-1. `preparedStatement.setBytes(1, data)`
-1. `preparedStatement.execute()...`
+2. Create a prepared statement with `?` symbol: `insert into T values(1, ?)`
+3. Prepare a blob data in byte array (e.g., `byte[] data = ...`)
+4. `preparedStatement.setBytes(1, data)`
+5. `preparedStatement.execute()...`
 
 ## Reading Database Files in classpaths or network (read-only)
 To load db files that can be found from the class loader (e.g., db 

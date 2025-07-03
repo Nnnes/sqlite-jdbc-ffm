@@ -27,7 +27,7 @@ package org.sqlite;
 import java.sql.SQLException;
 
 public class SQLiteException extends SQLException {
-    private SQLiteErrorCode resultCode;
+    private final SQLiteErrorCode resultCode;
 
     public SQLiteException(String message, SQLiteErrorCode resultCode) {
         super(message, null, resultCode.code & 0xff);

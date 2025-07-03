@@ -12,8 +12,8 @@ import org.junit.jupiter.api.Test;
 /** A test to make sure that getMetadata is properly freed */
 public class MetadataLeakTest {
     /**
-     * Check that statement is properly closed when result set is closed. See
-     * https://github.com/xerial/sqlite-jdbc/issues/423
+     * Check that statement is properly closed when result set is closed. See <a
+     * href="https://github.com/xerial/sqlite-jdbc/issues/423">https://github.com/xerial/sqlite-jdbc/issues/423</a>
      *
      * @throws Exception on failure
      */
@@ -23,7 +23,7 @@ public class MetadataLeakTest {
             DatabaseMetaData meta = con.getMetaData();
 
             Statement statement;
-            try (ResultSet tables = meta.getTables(null, null, null, null); ) {
+            try (ResultSet tables = meta.getTables(null, null, null, null)) {
                 statement = tables.getStatement();
                 assertThat(statement.isClosed()).isFalse();
             }

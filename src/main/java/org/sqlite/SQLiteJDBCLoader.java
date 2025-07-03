@@ -130,20 +130,17 @@ public class SQLiteJDBCLoader {
      * @throws NoSuchAlgorithmException
      */
     static String md5sum(InputStream input) throws IOException {
-        BufferedInputStream in = new BufferedInputStream(input);
 
-        try {
-            MessageDigest digest = java.security.MessageDigest.getInstance("MD5");
+        try (BufferedInputStream in = new BufferedInputStream(input)) {
+            MessageDigest digest = MessageDigest.getInstance("MD5");
             DigestInputStream digestInputStream = new DigestInputStream(in, digest);
-            for (; digestInputStream.read() >= 0; ) {}
+            while (digestInputStream.read() >= 0) {}
 
             ByteArrayOutputStream md5out = new ByteArrayOutputStream();
             md5out.write(digest.digest());
             return md5out.toString();
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException("MD5 algorithm is not available: " + e);
-        } finally {
-            in.close();
         }
     }
 

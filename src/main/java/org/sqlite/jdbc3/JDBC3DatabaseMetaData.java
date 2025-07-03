@@ -1223,42 +1223,26 @@ public abstract class JDBC3DatabaseMetaData extends CoreDatabaseMetaData {
 
         boolean colFound = false;
 
-        ResultSet rs = null;
-        try {
+        boolean done = false;
+        try (ResultSet rs = getTables(c, s, tblNamePattern, null)) {
             // Get all tables implied by the input
-            rs = getTables(c, s, tblNamePattern, null);
             while (rs.next()) {
                 String tableName = rs.getString(3);
 
-                boolean isAutoIncrement;
+                boolean isAutoIncrement = false;
 
-                Statement statColAutoinc = conn.createStatement();
-                ResultSet rsColAutoinc = null;
-                try {
-                    statColAutoinc = conn.createStatement();
-                    rsColAutoinc =
-                            statColAutoinc.executeQuery(
-                                    "SELECT LIKE('%autoincrement%', LOWER(sql)) FROM sqlite_schema "
-                                            + "WHERE LOWER(name) = LOWER('"
-                                            + escape(tableName)
-                                            + "') AND TYPE IN ('table', 'view')");
+                try (Statement statColAutoinc = conn.createStatement();
+                        ResultSet rsColAutoinc =
+                                statColAutoinc.executeQuery(
+                                        "SELECT LIKE('%autoincrement%', LOWER(sql)) FROM sqlite_schema "
+                                                + "WHERE LOWER(name) = LOWER('"
+                                                + escape(tableName)
+                                                + "') AND TYPE IN ('table', 'view')")) {
                     rsColAutoinc.next();
                     isAutoIncrement = rsColAutoinc.getInt(1) == 1;
-                } finally {
-                    if (rsColAutoinc != null) {
-                        try {
-                            rsColAutoinc.close();
-                        } catch (Exception e) {
-                            LogHolder.logger.error(() -> "Could not close ResultSet", e);
-                        }
-                    }
-                    if (statColAutoinc != null) {
-                        try {
-                            statColAutoinc.close();
-                        } catch (Exception e) {
-                            LogHolder.logger.error(() -> "Could not close statement", e);
-                        }
-                    }
+                } catch (SQLException e) {
+                    LogHolder.logger.error(() -> "Could not close ResultSet", e);
+                    LogHolder.logger.error(() -> "Could not close statement", e);
                 }
 
                 // For each table, get the column info and build into overall SQL
@@ -1405,14 +1389,10 @@ public abstract class JDBC3DatabaseMetaData extends CoreDatabaseMetaData {
                     }
                 }
             }
-        } finally {
-            if (rs != null) {
-                try {
-                    rs.close();
-                } catch (Exception e) {
-                    LogHolder.logger.error(() -> "Could not close ResultSet", e);
-                }
-            }
+            done = true;
+        } catch (SQLException e) {
+            if (done) LogHolder.logger.error(() -> "Could not close ResultSet", e);
+            else throw e;
         }
 
         if (colFound) {
@@ -1675,7 +1655,7 @@ public abstract class JDBC3DatabaseMetaData extends CoreDatabaseMetaData {
         return ((CoreStatement) stat).executeQuery(sql.toString(), true);
     }
 
-    private StringBuilder appendDummyForeignKeyList(StringBuilder sql) {
+    private void appendDummyForeignKeyList(StringBuilder sql) {
         sql.append("select -1 as ks, '' as ptn, '' as fcn, '' as pcn, ")
                 .append(DatabaseMetaData.importedKeyNoAction)
                 .append(" as ur, ")
@@ -1684,7 +1664,6 @@ public abstract class JDBC3DatabaseMetaData extends CoreDatabaseMetaData {
                 .append(" '' as fkn, ")
                 .append(" '' as pkn ")
                 .append(") limit 0;");
-        return sql;
     }
 
     /**
@@ -1718,7 +1697,7 @@ public abstract class JDBC3DatabaseMetaData extends CoreDatabaseMetaData {
         try {
             rs = stat.executeQuery("pragma foreign_key_list('" + escape(table) + "');");
         } catch (SQLException e) {
-            sql = appendDummyForeignKeyList(sql);
+            appendDummyForeignKeyList(sql);
             return ((CoreStatement) stat).executeQuery(sql.toString(), true);
         }
 
@@ -1799,7 +1778,7 @@ public abstract class JDBC3DatabaseMetaData extends CoreDatabaseMetaData {
         rs.close();
 
         if (i == 0) {
-            sql = appendDummyForeignKeyList(sql);
+            appendDummyForeignKeyList(sql);
         } else {
             sql.append(") ORDER BY PKTABLE_CAT, PKTABLE_SCHEM, PKTABLE_NAME, KEY_SEQ;");
         }
@@ -1834,11 +1813,11 @@ public abstract class JDBC3DatabaseMetaData extends CoreDatabaseMetaData {
         ArrayList<ArrayList<Object>> indexList = new ArrayList<>();
         while (rs.next()) {
             indexList.add(new ArrayList<>());
-            indexList.get(indexList.size() - 1).add(rs.getString(2));
-            indexList.get(indexList.size() - 1).add(rs.getInt(3));
+            indexList.getLast().add(rs.getString(2));
+            indexList.getLast().add(rs.getInt(3));
         }
         rs.close();
-        if (indexList.size() == 0) {
+        if (indexList.isEmpty()) {
             // if pragma index_list() returns no information, use this null block
             sql.append("select null as un, null as n, null as op, null as cn) limit 0;");
             return ((CoreStatement) stat).executeQuery(sql.toString(), true);
@@ -1974,9 +1953,7 @@ public abstract class JDBC3DatabaseMetaData extends CoreDatabaseMetaData {
         checkOpen();
 
         tblNamePattern =
-                (tblNamePattern == null || "".equals(tblNamePattern))
-                        ? "%"
-                        : escape(tblNamePattern);
+                (tblNamePattern == null || tblNamePattern.isEmpty()) ? "%" : escape(tblNamePattern);
 
         StringBuilder sql = new StringBuilder();
         sql.append("SELECT").append("\n");
@@ -2282,7 +2259,7 @@ public abstract class JDBC3DatabaseMetaData extends CoreDatabaseMetaData {
             // exception
             if ("sqlite_schema".equals(table) || "sqlite_master".equals(table)) return;
 
-            if (table == null || table.trim().length() == 0) {
+            if (table == null || table.trim().isEmpty()) {
                 throw new SQLException("Invalid table name: '" + this.table + "'");
             }
 
@@ -2353,7 +2330,7 @@ public abstract class JDBC3DatabaseMetaData extends CoreDatabaseMetaData {
 
         public ImportedKeyFinder(String table) throws SQLException {
 
-            if (table == null || table.trim().length() == 0) {
+            if (table == null || table.trim().isEmpty()) {
                 throw new SQLException("Invalid table name: '" + table + "'");
             }
 
@@ -2436,7 +2413,7 @@ public abstract class JDBC3DatabaseMetaData extends CoreDatabaseMetaData {
             return fkList;
         }
 
-        class ForeignKey {
+        static class ForeignKey {
 
             private final String fkName;
             private final String pkTableName;
@@ -2530,7 +2507,7 @@ public abstract class JDBC3DatabaseMetaData extends CoreDatabaseMetaData {
      * @return Unquoted identifier
      */
     private String unquoteIdentifier(String name) {
-        if (name == null) return name;
+        if (name == null) return null;
         name = name.trim();
         if (name.length() > 2
                 && ((name.startsWith("`") && name.endsWith("`"))
