@@ -448,8 +448,9 @@ public abstract class JDBC3PreparedStatement extends CorePreparedStatement {
             char[] cbuf = new char[8192];
             int cnt;
 
-            while ((cnt = reader.read(cbuf)) > 0) {
+            while ((cnt = reader.read(cbuf, 0, Math.min(length, cbuf.length))) > 0) {
                 sb.append(cbuf, 0, cnt);
+                length -= cnt;
             }
 
             // set as string
