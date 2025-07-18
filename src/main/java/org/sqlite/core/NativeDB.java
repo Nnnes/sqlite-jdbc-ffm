@@ -741,22 +741,18 @@ public final class NativeDB extends DB {
 
     @Override
     synchronized void set_commit_listener(boolean enabled) {
-        $this.set_commit_listener(enabled);
+        try {
+            $this.set_commit_listener(enabled);
+        } catch (SQLException _) {
+        }
     }
 
     @Override
     synchronized void set_update_listener(boolean enabled) {
-        $this.set_update_listener(enabled);
-    }
-
-    /**
-     * Throws an SQLException. Called from native code
-     *
-     * @param msg Message for the SQLException.
-     * @throws SQLException the generated SQLException
-     */
-    static void throwex(String msg) throws SQLException {
-        throw new SQLException(msg);
+        try {
+            $this.set_update_listener(enabled);
+        } catch (SQLException _) {
+        }
     }
 
     Arena progressHandlerArena = null;

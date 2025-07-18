@@ -2,6 +2,7 @@ package org.sqlite.core;
 
 import java.lang.foreign.MemorySegment;
 import java.sql.SQLException;
+import java.util.Objects;
 
 /// A class for safely wrapping calls to a native pointer to a statement, ensuring no other thread
 /// has access to the pointer while it is run
@@ -30,6 +31,9 @@ public class SafeStmtPtr {
      * @param stmt the raw pointer contained in a MemorySegment
      */
     public SafeStmtPtr(DB db, MemorySegment stmt) {
+        Objects.requireNonNull(db);
+        Objects.requireNonNull(stmt);
+        if (stmt.address() == MemorySegment.NULL.address()) throw new NullPointerException();
         this.db = db;
         this.stmt = stmt;
     }
