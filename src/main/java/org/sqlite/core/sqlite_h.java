@@ -19,7 +19,7 @@ import org.sqlite.util.LoggerFactory;
 /// have been included.
 ///
 /// The SQLite version listed for each MethodHandle variable is the first version of SQLite that
-// included that function and its signature.
+/// included that function and its signature.
 class sqlite_h {
     static final long SQLITE_TRANSIENT = -1;
     static final int SQLITE_UTF8 = 1;
