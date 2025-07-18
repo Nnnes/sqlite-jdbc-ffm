@@ -11,9 +11,15 @@ import java.lang.foreign.Linker;
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.SymbolLookup;
 import java.lang.invoke.MethodHandle;
+import java.util.Optional;
+import org.sqlite.util.Logger;
+import org.sqlite.util.LoggerFactory;
 
 /// FFM interface with `sqlite3` native library. Only functions and constants used in [NativeDB_c]
 /// have been included.
+///
+/// The SQLite version listed for each MethodHandle variable is the first version of SQLite that
+// included that function and its signature.
 class sqlite_h {
     static final long SQLITE_TRANSIENT = -1;
     static final int SQLITE_UTF8 = 1;
@@ -26,81 +32,163 @@ class sqlite_h {
     static final int SQLITE_DESERIALIZE_FREEONCLOSE = 1;
     static final int SQLITE_DESERIALIZE_RESIZEABLE = 2;
     static final int SQLITE_FCNTL_SIZE_LIMIT = 36;
+    private static final Logger logger = LoggerFactory.getLogger(sqlite_h.class);
+
+    /// SQLite 3.6.11
     private static final MethodHandle sqlite3_backup_finish;
+    /// SQLite 3.6.11
     private static final MethodHandle sqlite3_backup_init;
+    /// SQLite 3.6.11
     private static final MethodHandle sqlite3_backup_pagecount;
+    /// SQLite 3.6.11
     private static final MethodHandle sqlite3_backup_remaining;
+    /// SQLite 3.6.11
     private static final MethodHandle sqlite3_backup_step;
+    /// SQLite 3.0.0
     private static final MethodHandle sqlite3_bind_blob;
+    /// SQLite 3.0.0
     private static final MethodHandle sqlite3_bind_double;
+    /// SQLite 3.0.0
     private static final MethodHandle sqlite3_bind_int;
+    /// SQLite 3.0.0
     private static final MethodHandle sqlite3_bind_int64;
+    /// SQLite 3.0.0
     private static final MethodHandle sqlite3_bind_null;
+    /// SQLite 3.0.3
     private static final MethodHandle sqlite3_bind_parameter_count;
+    /// SQLite 3.0.0
     private static final MethodHandle sqlite3_bind_text;
+    /// SQLite 3.0.1
     private static final MethodHandle sqlite3_busy_handler;
+    /// SQLite 3.0.1
     private static final MethodHandle sqlite3_busy_timeout;
+    /// SQLite 3.0.0
+    private static final MethodHandle sqlite3_changes;
+    /// SQLite 3.37.0
     private static final MethodHandle sqlite3_changes64;
+    /// SQLite 3.1.0
     private static final MethodHandle sqlite3_clear_bindings;
+    /// SQLite 3.0.0
     private static final MethodHandle sqlite3_close;
+    /// SQLite 3.0.0
     private static final MethodHandle sqlite3_column_blob;
+    /// SQLite 3.0.0
     private static final MethodHandle sqlite3_column_bytes;
+    /// SQLite 3.0.0
     private static final MethodHandle sqlite3_column_count;
+    /// SQLite 3.0.0
     private static final MethodHandle sqlite3_column_decltype;
+    /// SQLite 3.0.0
     private static final MethodHandle sqlite3_column_double;
+    /// SQLite 3.0.0
     private static final MethodHandle sqlite3_column_int;
+    /// SQLite 3.0.0
     private static final MethodHandle sqlite3_column_int64;
+    /// SQLite 3.0.0
     private static final MethodHandle sqlite3_column_name;
+    /// SQLite 3.3.5
     private static final MethodHandle sqlite3_column_table_name;
+    /// SQLite 3.0.0
     private static final MethodHandle sqlite3_column_text;
+    /// SQLite 3.0.0
     private static final MethodHandle sqlite3_column_type;
+    /// SQLite 3.0.0
     private static final MethodHandle sqlite3_commit_hook;
+    /// SQLite 3.0.0
     private static final MethodHandle sqlite3_create_collation;
+    /// SQLite 3.4.0
     private static final MethodHandle sqlite3_create_collation_v2;
+    /// SQLite 3.0.1
     private static final MethodHandle sqlite3_create_function;
+    /// SQLite 3.7.3
     private static final MethodHandle sqlite3_create_function_v2;
+    /// SQLite 3.25.0
     private static final MethodHandle sqlite3_create_window_function;
+    /// SQLite 3.23.0
     private static final MethodHandle sqlite3_deserialize;
+    /// SQLite 3.3.7
     private static final MethodHandle sqlite3_enable_load_extension;
+    /// SQLite 3.3.0
     private static final MethodHandle sqlite3_enable_shared_cache;
+    /// SQLite 3.0.0
     private static final MethodHandle sqlite3_errcode;
+    /// SQLite 3.0.0
     private static final MethodHandle sqlite3_errmsg;
+    /// SQLite 3.0.0
     private static final MethodHandle sqlite3_exec;
+    /// SQLite 3.6.5
     private static final MethodHandle sqlite3_extended_errcode;
+    /// SQLite 3.3.8
     private static final MethodHandle sqlite3_extended_result_codes;
+    /// SQLite 3.5.0
     private static final MethodHandle sqlite3_file_control;
+    /// SQLite 3.0.1
     private static final MethodHandle sqlite3_finalize;
+    /// SQLite 3.0.0
     private static final MethodHandle sqlite3_free;
+    /// SQLite 3.0.0
     private static final MethodHandle sqlite3_interrupt;
+    /// SQLite 3.0.5
     private static final MethodHandle sqlite3_libversion;
+    /// SQLite 3.1.2
     private static final MethodHandle sqlite3_libversion_number;
+    /// SQLite 3.5.8
     private static final MethodHandle sqlite3_limit;
-    private static final MethodHandle sqlite3_malloc64;
+    /// SQLite 3.3.7
+    private static final MethodHandle sqlite3_malloc;
+    /// SQLite 3.5.0
     private static final MethodHandle sqlite3_open_v2;
+    /// SQLite 3.3.9
     private static final MethodHandle sqlite3_prepare_v2;
+    /// SQLite 3.0.0
     private static final MethodHandle sqlite3_progress_handler;
+    /// SQLite 3.0.1
     private static final MethodHandle sqlite3_reset;
+    /// SQLite 3.0.0
     private static final MethodHandle sqlite3_result_blob;
+    /// SQLite 3.0.0
     private static final MethodHandle sqlite3_result_double;
+    /// SQLite 3.0.0
     private static final MethodHandle sqlite3_result_error;
+    /// SQLite 3.0.0
     private static final MethodHandle sqlite3_result_int;
+    /// SQLite 3.0.0
     private static final MethodHandle sqlite3_result_int64;
+    /// SQLite 3.0.0
     private static final MethodHandle sqlite3_result_null;
+    /// SQLite 3.0.0
     private static final MethodHandle sqlite3_result_text;
+    /// SQLite 3.3.0
     private static final MethodHandle sqlite3_rollback_hook;
+    /// SQLite 3.23.0
     private static final MethodHandle sqlite3_serialize;
+    /// SQLite 3.1.0
     private static final MethodHandle sqlite3_sleep;
+    /// SQLite 3.0.1
     private static final MethodHandle sqlite3_step;
+    /// SQLite 3.6.17
     private static final MethodHandle sqlite3_strnicmp;
+    /// SQLite 3.3.5
     private static final MethodHandle sqlite3_table_column_metadata;
+    /// SQLite 3.0.1
+    private static final MethodHandle sqlite3_total_changes;
+    /// SQLite 3.37.0
     private static final MethodHandle sqlite3_total_changes64;
+    /// SQLite 3.3.0
     private static final MethodHandle sqlite3_update_hook;
+    /// SQLite 3.0.0
     private static final MethodHandle sqlite3_value_blob;
+    /// SQLite 3.0.0
     private static final MethodHandle sqlite3_value_bytes;
+    /// SQLite 3.0.0
     private static final MethodHandle sqlite3_value_double;
+    /// SQLite 3.0.0
     private static final MethodHandle sqlite3_value_int;
+    /// SQLite 3.0.0
     private static final MethodHandle sqlite3_value_int64;
+    /// SQLite 3.0.0
     private static final MethodHandle sqlite3_value_text;
+    /// SQLite 3.0.0
     private static final MethodHandle sqlite3_value_type;
 
     static {
@@ -108,405 +196,374 @@ class sqlite_h {
                 SymbolLookup.libraryLookup(System.mapLibraryName("sqlite3"), Arena.ofAuto());
 
         sqlite3_backup_finish =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_backup_finish"),
-                                FunctionDescriptor.of(JAVA_INT, ADDRESS));
+                loadOrNull(
+                        libsqlite3,
+                        "sqlite3_backup_finish",
+                        FunctionDescriptor.of(JAVA_INT, ADDRESS));
         sqlite3_backup_init =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_backup_init"),
-                                FunctionDescriptor.of(ADDRESS, ADDRESS, ADDRESS, ADDRESS, ADDRESS));
+                loadOrNull(
+                        libsqlite3,
+                        "sqlite3_backup_init",
+                        FunctionDescriptor.of(ADDRESS, ADDRESS, ADDRESS, ADDRESS, ADDRESS));
         sqlite3_backup_pagecount =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_backup_pagecount"),
-                                FunctionDescriptor.of(JAVA_INT, ADDRESS));
+                loadOrNull(
+                        libsqlite3,
+                        "sqlite3_backup_pagecount",
+                        FunctionDescriptor.of(JAVA_INT, ADDRESS));
         sqlite3_backup_remaining =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_backup_remaining"),
-                                FunctionDescriptor.of(JAVA_INT, ADDRESS));
+                loadOrNull(
+                        libsqlite3,
+                        "sqlite3_backup_remaining",
+                        FunctionDescriptor.of(JAVA_INT, ADDRESS));
         sqlite3_backup_step =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_backup_step"),
-                                FunctionDescriptor.of(JAVA_INT, ADDRESS, JAVA_INT));
+                loadOrNull(
+                        libsqlite3,
+                        "sqlite3_backup_step",
+                        FunctionDescriptor.of(JAVA_INT, ADDRESS, JAVA_INT));
         sqlite3_bind_blob =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_bind_blob"),
-                                FunctionDescriptor.of(
-                                        JAVA_INT, ADDRESS, JAVA_INT, ADDRESS, JAVA_INT, ADDRESS));
+                loadOrNull(
+                        libsqlite3,
+                        "sqlite3_bind_blob",
+                        FunctionDescriptor.of(
+                                JAVA_INT, ADDRESS, JAVA_INT, ADDRESS, JAVA_INT, ADDRESS));
         sqlite3_bind_double =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_bind_double"),
-                                FunctionDescriptor.of(JAVA_INT, ADDRESS, JAVA_INT, JAVA_DOUBLE));
+                loadOrNull(
+                        libsqlite3,
+                        "sqlite3_bind_double",
+                        FunctionDescriptor.of(JAVA_INT, ADDRESS, JAVA_INT, JAVA_DOUBLE));
         sqlite3_bind_int =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_bind_int"),
-                                FunctionDescriptor.of(JAVA_INT, ADDRESS, JAVA_INT, JAVA_INT));
+                loadOrNull(
+                        libsqlite3,
+                        "sqlite3_bind_int",
+                        FunctionDescriptor.of(JAVA_INT, ADDRESS, JAVA_INT, JAVA_INT));
         sqlite3_bind_int64 =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_bind_int64"),
-                                FunctionDescriptor.of(JAVA_INT, ADDRESS, JAVA_INT, JAVA_LONG));
+                loadOrNull(
+                        libsqlite3,
+                        "sqlite3_bind_int64",
+                        FunctionDescriptor.of(JAVA_INT, ADDRESS, JAVA_INT, JAVA_LONG));
         sqlite3_bind_null =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_bind_null"),
-                                FunctionDescriptor.of(JAVA_INT, ADDRESS, JAVA_INT));
+                loadOrNull(
+                        libsqlite3,
+                        "sqlite3_bind_null",
+                        FunctionDescriptor.of(JAVA_INT, ADDRESS, JAVA_INT));
         sqlite3_bind_parameter_count =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_bind_parameter_count"),
-                                FunctionDescriptor.of(JAVA_INT, ADDRESS));
+                loadOrNull(
+                        libsqlite3,
+                        "sqlite3_bind_parameter_count",
+                        FunctionDescriptor.of(JAVA_INT, ADDRESS));
         sqlite3_bind_text =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_bind_text"),
-                                FunctionDescriptor.of(
-                                        JAVA_INT, ADDRESS, JAVA_INT, ADDRESS, JAVA_INT, ADDRESS));
+                loadOrNull(
+                        libsqlite3,
+                        "sqlite3_bind_text",
+                        FunctionDescriptor.of(
+                                JAVA_INT, ADDRESS, JAVA_INT, ADDRESS, JAVA_INT, ADDRESS));
         sqlite3_busy_handler =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_busy_handler"),
-                                FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
+                loadOrNull(
+                        libsqlite3,
+                        "sqlite3_busy_handler",
+                        FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         sqlite3_busy_timeout =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_busy_timeout"),
-                                FunctionDescriptor.of(JAVA_INT, ADDRESS, JAVA_INT));
+                loadOrNull(
+                        libsqlite3,
+                        "sqlite3_busy_timeout",
+                        FunctionDescriptor.of(JAVA_INT, ADDRESS, JAVA_INT));
+        sqlite3_changes =
+                loadOrNull(libsqlite3, "sqlite3_changes", FunctionDescriptor.of(JAVA_INT, ADDRESS));
         sqlite3_changes64 =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_changes64"),
-                                FunctionDescriptor.of(JAVA_LONG, ADDRESS));
+                loadOrNull(
+                        libsqlite3, "sqlite3_changes64", FunctionDescriptor.of(JAVA_LONG, ADDRESS));
         sqlite3_clear_bindings =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_clear_bindings"),
-                                FunctionDescriptor.of(JAVA_INT, ADDRESS));
+                loadOrNull(
+                        libsqlite3,
+                        "sqlite3_clear_bindings",
+                        FunctionDescriptor.of(JAVA_INT, ADDRESS));
         sqlite3_close =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_close"),
-                                FunctionDescriptor.of(JAVA_INT, ADDRESS));
+                loadOrNull(libsqlite3, "sqlite3_close", FunctionDescriptor.of(JAVA_INT, ADDRESS));
         sqlite3_column_blob =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_column_blob"),
-                                FunctionDescriptor.of(ADDRESS, ADDRESS, JAVA_INT));
+                loadOrNull(
+                        libsqlite3,
+                        "sqlite3_column_blob",
+                        FunctionDescriptor.of(ADDRESS, ADDRESS, JAVA_INT));
         sqlite3_column_bytes =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_column_bytes"),
-                                FunctionDescriptor.of(JAVA_INT, ADDRESS, JAVA_INT));
+                loadOrNull(
+                        libsqlite3,
+                        "sqlite3_column_bytes",
+                        FunctionDescriptor.of(JAVA_INT, ADDRESS, JAVA_INT));
         sqlite3_column_count =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_column_count"),
-                                FunctionDescriptor.of(JAVA_INT, ADDRESS));
+                loadOrNull(
+                        libsqlite3,
+                        "sqlite3_column_count",
+                        FunctionDescriptor.of(JAVA_INT, ADDRESS));
         sqlite3_column_decltype =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_column_decltype"),
-                                FunctionDescriptor.of(ADDRESS, ADDRESS, JAVA_INT));
+                loadOrNull(
+                        libsqlite3,
+                        "sqlite3_column_decltype",
+                        FunctionDescriptor.of(ADDRESS, ADDRESS, JAVA_INT));
         sqlite3_column_double =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_column_double"),
-                                FunctionDescriptor.of(JAVA_DOUBLE, ADDRESS, JAVA_INT));
+                loadOrNull(
+                        libsqlite3,
+                        "sqlite3_column_double",
+                        FunctionDescriptor.of(JAVA_DOUBLE, ADDRESS, JAVA_INT));
         sqlite3_column_int =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_column_int"),
-                                FunctionDescriptor.of(JAVA_INT, ADDRESS, JAVA_INT));
+                loadOrNull(
+                        libsqlite3,
+                        "sqlite3_column_int",
+                        FunctionDescriptor.of(JAVA_INT, ADDRESS, JAVA_INT));
         sqlite3_column_int64 =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_column_int64"),
-                                FunctionDescriptor.of(JAVA_LONG, ADDRESS, JAVA_INT));
+                loadOrNull(
+                        libsqlite3,
+                        "sqlite3_column_int64",
+                        FunctionDescriptor.of(JAVA_LONG, ADDRESS, JAVA_INT));
         sqlite3_column_name =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_column_name"),
-                                FunctionDescriptor.of(ADDRESS, ADDRESS, JAVA_INT));
+                loadOrNull(
+                        libsqlite3,
+                        "sqlite3_column_name",
+                        FunctionDescriptor.of(ADDRESS, ADDRESS, JAVA_INT));
         sqlite3_column_table_name =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_column_table_name"),
-                                FunctionDescriptor.of(ADDRESS, ADDRESS, JAVA_INT));
+                loadOrNull(
+                        libsqlite3,
+                        "sqlite3_column_table_name",
+                        FunctionDescriptor.of(ADDRESS, ADDRESS, JAVA_INT));
         sqlite3_column_text =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_column_text"),
-                                FunctionDescriptor.of(ADDRESS, ADDRESS, JAVA_INT));
+                loadOrNull(
+                        libsqlite3,
+                        "sqlite3_column_text",
+                        FunctionDescriptor.of(ADDRESS, ADDRESS, JAVA_INT));
         sqlite3_column_type =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_column_type"),
-                                FunctionDescriptor.of(JAVA_INT, ADDRESS, JAVA_INT));
+                loadOrNull(
+                        libsqlite3,
+                        "sqlite3_column_type",
+                        FunctionDescriptor.of(JAVA_INT, ADDRESS, JAVA_INT));
         sqlite3_commit_hook =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_commit_hook"),
-                                FunctionDescriptor.of(ADDRESS, ADDRESS, ADDRESS, ADDRESS));
+                loadOrNull(
+                        libsqlite3,
+                        "sqlite3_commit_hook",
+                        FunctionDescriptor.of(ADDRESS, ADDRESS, ADDRESS, ADDRESS));
         sqlite3_create_collation =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_create_collation"),
-                                FunctionDescriptor.of(
-                                        JAVA_INT, ADDRESS, ADDRESS, JAVA_INT, ADDRESS, ADDRESS));
+                loadOrNull(
+                        libsqlite3,
+                        "sqlite3_create_collation",
+                        FunctionDescriptor.of(
+                                JAVA_INT, ADDRESS, ADDRESS, JAVA_INT, ADDRESS, ADDRESS));
         sqlite3_create_collation_v2 =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_create_collation_v2"),
-                                FunctionDescriptor.of(
-                                        JAVA_INT, ADDRESS, ADDRESS, JAVA_INT, ADDRESS, ADDRESS,
-                                        ADDRESS));
+                loadOrNull(
+                        libsqlite3,
+                        "sqlite3_create_collation_v2",
+                        FunctionDescriptor.of(
+                                JAVA_INT, ADDRESS, ADDRESS, JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         sqlite3_create_function =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_create_function"),
-                                FunctionDescriptor.of(
-                                        JAVA_INT, ADDRESS, ADDRESS, JAVA_INT, JAVA_INT, ADDRESS,
-                                        ADDRESS, ADDRESS, ADDRESS));
+                loadOrNull(
+                        libsqlite3,
+                        "sqlite3_create_function",
+                        FunctionDescriptor.of(
+                                JAVA_INT, ADDRESS, ADDRESS, JAVA_INT, JAVA_INT, ADDRESS, ADDRESS,
+                                ADDRESS, ADDRESS));
         sqlite3_create_function_v2 =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_create_function_v2"),
-                                FunctionDescriptor.of(
-                                        JAVA_INT, ADDRESS, ADDRESS, JAVA_INT, JAVA_INT, ADDRESS,
-                                        ADDRESS, ADDRESS, ADDRESS, ADDRESS));
+                loadOrNull(
+                        libsqlite3,
+                        "sqlite3_create_function_v2",
+                        FunctionDescriptor.of(
+                                JAVA_INT, ADDRESS, ADDRESS, JAVA_INT, JAVA_INT, ADDRESS, ADDRESS,
+                                ADDRESS, ADDRESS, ADDRESS));
         sqlite3_create_window_function =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_create_window_function"),
-                                FunctionDescriptor.of(
-                                        JAVA_INT, ADDRESS, ADDRESS, JAVA_INT, JAVA_INT, ADDRESS,
-                                        ADDRESS, ADDRESS, ADDRESS, ADDRESS, ADDRESS));
+                loadOrNull(
+                        libsqlite3,
+                        "sqlite3_create_window_function",
+                        FunctionDescriptor.of(
+                                JAVA_INT, ADDRESS, ADDRESS, JAVA_INT, JAVA_INT, ADDRESS, ADDRESS,
+                                ADDRESS, ADDRESS, ADDRESS, ADDRESS));
         sqlite3_deserialize =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_deserialize"),
-                                FunctionDescriptor.of(
-                                        JAVA_INT, ADDRESS, ADDRESS, ADDRESS, JAVA_LONG, JAVA_LONG,
-                                        JAVA_INT));
+                loadOrNull(
+                        libsqlite3,
+                        "sqlite3_deserialize",
+                        FunctionDescriptor.of(
+                                JAVA_INT, ADDRESS, ADDRESS, ADDRESS, JAVA_LONG, JAVA_LONG,
+                                JAVA_INT));
         sqlite3_enable_load_extension =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_enable_load_extension"),
-                                FunctionDescriptor.of(JAVA_INT, ADDRESS, JAVA_INT));
+                loadOrNull(
+                        libsqlite3,
+                        "sqlite3_enable_load_extension",
+                        FunctionDescriptor.of(JAVA_INT, ADDRESS, JAVA_INT));
         sqlite3_enable_shared_cache =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_enable_shared_cache"),
-                                FunctionDescriptor.of(JAVA_INT, JAVA_INT));
+                loadOrNull(
+                        libsqlite3,
+                        "sqlite3_enable_shared_cache",
+                        FunctionDescriptor.of(JAVA_INT, JAVA_INT));
         sqlite3_errcode =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_errcode"),
-                                FunctionDescriptor.of(JAVA_INT, ADDRESS));
+                loadOrNull(libsqlite3, "sqlite3_errcode", FunctionDescriptor.of(JAVA_INT, ADDRESS));
         sqlite3_errmsg =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_errmsg"),
-                                FunctionDescriptor.of(ADDRESS, ADDRESS));
+                loadOrNull(libsqlite3, "sqlite3_errmsg", FunctionDescriptor.of(ADDRESS, ADDRESS));
         sqlite3_exec =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_exec"),
-                                FunctionDescriptor.of(
-                                        JAVA_INT, ADDRESS, ADDRESS, ADDRESS, ADDRESS, ADDRESS));
+                loadOrNull(
+                        libsqlite3,
+                        "sqlite3_exec",
+                        FunctionDescriptor.of(
+                                JAVA_INT, ADDRESS, ADDRESS, ADDRESS, ADDRESS, ADDRESS));
         sqlite3_extended_errcode =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_extended_errcode"),
-                                FunctionDescriptor.of(JAVA_INT, ADDRESS));
+                loadOrNull(
+                        libsqlite3,
+                        "sqlite3_extended_errcode",
+                        FunctionDescriptor.of(JAVA_INT, ADDRESS));
         sqlite3_extended_result_codes =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_extended_result_codes"),
-                                FunctionDescriptor.of(JAVA_INT, ADDRESS, JAVA_INT));
+                loadOrNull(
+                        libsqlite3,
+                        "sqlite3_extended_result_codes",
+                        FunctionDescriptor.of(JAVA_INT, ADDRESS, JAVA_INT));
         sqlite3_file_control =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_file_control"),
-                                FunctionDescriptor.of(
-                                        JAVA_INT, ADDRESS, ADDRESS, JAVA_INT, ADDRESS));
+                loadOrNull(
+                        libsqlite3,
+                        "sqlite3_file_control",
+                        FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, JAVA_INT, ADDRESS));
         sqlite3_finalize =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_finalize"),
-                                FunctionDescriptor.of(JAVA_INT, ADDRESS));
-        sqlite3_free =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_free"),
-                                FunctionDescriptor.ofVoid(ADDRESS));
+                loadOrNull(
+                        libsqlite3, "sqlite3_finalize", FunctionDescriptor.of(JAVA_INT, ADDRESS));
+        sqlite3_free = loadOrNull(libsqlite3, "sqlite3_free", FunctionDescriptor.ofVoid(ADDRESS));
         sqlite3_interrupt =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_interrupt"),
-                                FunctionDescriptor.ofVoid(ADDRESS));
+                loadOrNull(libsqlite3, "sqlite3_interrupt", FunctionDescriptor.ofVoid(ADDRESS));
         sqlite3_libversion =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_libversion"),
-                                FunctionDescriptor.of(ADDRESS));
+                loadOrNull(libsqlite3, "sqlite3_libversion", FunctionDescriptor.of(ADDRESS));
         sqlite3_libversion_number =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_libversion_number"),
-                                FunctionDescriptor.of(JAVA_INT));
+                loadOrNull(
+                        libsqlite3, "sqlite3_libversion_number", FunctionDescriptor.of(JAVA_INT));
         sqlite3_limit =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_limit"),
-                                FunctionDescriptor.of(JAVA_INT, ADDRESS, JAVA_INT, JAVA_INT));
-        sqlite3_malloc64 =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_malloc64"),
-                                FunctionDescriptor.of(ADDRESS, JAVA_LONG));
+                loadOrNull(
+                        libsqlite3,
+                        "sqlite3_limit",
+                        FunctionDescriptor.of(JAVA_INT, ADDRESS, JAVA_INT, JAVA_INT));
+        sqlite3_malloc =
+                loadOrNull(libsqlite3, "sqlite3_malloc", FunctionDescriptor.of(ADDRESS, JAVA_INT));
         sqlite3_open_v2 =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_open_v2"),
-                                FunctionDescriptor.of(
-                                        JAVA_INT, ADDRESS, ADDRESS, JAVA_INT, ADDRESS));
+                loadOrNull(
+                        libsqlite3,
+                        "sqlite3_open_v2",
+                        FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, JAVA_INT, ADDRESS));
         sqlite3_prepare_v2 =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_prepare_v2"),
-                                FunctionDescriptor.of(
-                                        JAVA_INT, ADDRESS, ADDRESS, JAVA_INT, ADDRESS, ADDRESS));
+                loadOrNull(
+                        libsqlite3,
+                        "sqlite3_prepare_v2",
+                        FunctionDescriptor.of(
+                                JAVA_INT, ADDRESS, ADDRESS, JAVA_INT, ADDRESS, ADDRESS));
         sqlite3_progress_handler =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_progress_handler"),
-                                FunctionDescriptor.ofVoid(ADDRESS, JAVA_INT, ADDRESS, ADDRESS));
+                loadOrNull(
+                        libsqlite3,
+                        "sqlite3_progress_handler",
+                        FunctionDescriptor.ofVoid(ADDRESS, JAVA_INT, ADDRESS, ADDRESS));
         sqlite3_reset =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_reset"),
-                                FunctionDescriptor.of(JAVA_INT, ADDRESS));
+                loadOrNull(libsqlite3, "sqlite3_reset", FunctionDescriptor.of(JAVA_INT, ADDRESS));
         sqlite3_result_blob =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_result_blob"),
-                                FunctionDescriptor.ofVoid(ADDRESS, ADDRESS, JAVA_INT, ADDRESS));
+                loadOrNull(
+                        libsqlite3,
+                        "sqlite3_result_blob",
+                        FunctionDescriptor.ofVoid(ADDRESS, ADDRESS, JAVA_INT, ADDRESS));
         sqlite3_result_double =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_result_double"),
-                                FunctionDescriptor.ofVoid(ADDRESS, JAVA_DOUBLE));
+                loadOrNull(
+                        libsqlite3,
+                        "sqlite3_result_double",
+                        FunctionDescriptor.ofVoid(ADDRESS, JAVA_DOUBLE));
         sqlite3_result_error =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_result_error"),
-                                FunctionDescriptor.ofVoid(ADDRESS, ADDRESS, JAVA_INT));
+                loadOrNull(
+                        libsqlite3,
+                        "sqlite3_result_error",
+                        FunctionDescriptor.ofVoid(ADDRESS, ADDRESS, JAVA_INT));
         sqlite3_result_int =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_result_int"),
-                                FunctionDescriptor.ofVoid(ADDRESS, JAVA_INT));
+                loadOrNull(
+                        libsqlite3,
+                        "sqlite3_result_int",
+                        FunctionDescriptor.ofVoid(ADDRESS, JAVA_INT));
         sqlite3_result_int64 =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_result_int64"),
-                                FunctionDescriptor.ofVoid(ADDRESS, JAVA_LONG));
+                loadOrNull(
+                        libsqlite3,
+                        "sqlite3_result_int64",
+                        FunctionDescriptor.ofVoid(ADDRESS, JAVA_LONG));
         sqlite3_result_null =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_result_null"),
-                                FunctionDescriptor.ofVoid(ADDRESS));
+                loadOrNull(libsqlite3, "sqlite3_result_null", FunctionDescriptor.ofVoid(ADDRESS));
         sqlite3_result_text =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_result_text"),
-                                FunctionDescriptor.ofVoid(ADDRESS, ADDRESS, JAVA_INT, ADDRESS));
+                loadOrNull(
+                        libsqlite3,
+                        "sqlite3_result_text",
+                        FunctionDescriptor.ofVoid(ADDRESS, ADDRESS, JAVA_INT, ADDRESS));
         sqlite3_rollback_hook =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_rollback_hook"),
-                                FunctionDescriptor.of(ADDRESS, ADDRESS, ADDRESS, ADDRESS));
+                loadOrNull(
+                        libsqlite3,
+                        "sqlite3_rollback_hook",
+                        FunctionDescriptor.of(ADDRESS, ADDRESS, ADDRESS, ADDRESS));
         sqlite3_serialize =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_serialize"),
-                                FunctionDescriptor.of(
-                                        ADDRESS, ADDRESS, ADDRESS, ADDRESS, JAVA_INT));
+                loadOrNull(
+                        libsqlite3,
+                        "sqlite3_serialize",
+                        FunctionDescriptor.of(ADDRESS, ADDRESS, ADDRESS, ADDRESS, JAVA_INT));
         sqlite3_sleep =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_sleep"),
-                                FunctionDescriptor.of(JAVA_INT, JAVA_INT));
+                loadOrNull(libsqlite3, "sqlite3_sleep", FunctionDescriptor.of(JAVA_INT, JAVA_INT));
         sqlite3_step =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_step"),
-                                FunctionDescriptor.of(JAVA_INT, ADDRESS));
+                loadOrNull(libsqlite3, "sqlite3_step", FunctionDescriptor.of(JAVA_INT, ADDRESS));
         sqlite3_strnicmp =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_strnicmp"),
-                                FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, JAVA_INT));
+                loadOrNull(
+                        libsqlite3,
+                        "sqlite3_strnicmp",
+                        FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, JAVA_INT));
         sqlite3_table_column_metadata =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_table_column_metadata"),
-                                FunctionDescriptor.of(
-                                        JAVA_INT, ADDRESS, ADDRESS, ADDRESS, ADDRESS, ADDRESS,
-                                        ADDRESS, ADDRESS, ADDRESS, ADDRESS));
+                loadOrNull(
+                        libsqlite3,
+                        "sqlite3_table_column_metadata",
+                        FunctionDescriptor.of(
+                                JAVA_INT, ADDRESS, ADDRESS, ADDRESS, ADDRESS, ADDRESS, ADDRESS,
+                                ADDRESS, ADDRESS, ADDRESS));
+        sqlite3_total_changes =
+                loadOrNull(
+                        libsqlite3,
+                        "sqlite3_total_changes",
+                        FunctionDescriptor.of(JAVA_INT, ADDRESS));
         sqlite3_total_changes64 =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_total_changes64"),
-                                FunctionDescriptor.of(JAVA_LONG, ADDRESS));
+                loadOrNull(
+                        libsqlite3,
+                        "sqlite3_total_changes64",
+                        FunctionDescriptor.of(JAVA_LONG, ADDRESS));
         sqlite3_update_hook =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_update_hook"),
-                                FunctionDescriptor.of(ADDRESS, ADDRESS, ADDRESS, ADDRESS));
+                loadOrNull(
+                        libsqlite3,
+                        "sqlite3_update_hook",
+                        FunctionDescriptor.of(ADDRESS, ADDRESS, ADDRESS, ADDRESS));
         sqlite3_value_blob =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_value_blob"),
-                                FunctionDescriptor.of(ADDRESS, ADDRESS));
+                loadOrNull(
+                        libsqlite3, "sqlite3_value_blob", FunctionDescriptor.of(ADDRESS, ADDRESS));
         sqlite3_value_bytes =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_value_bytes"),
-                                FunctionDescriptor.of(JAVA_INT, ADDRESS));
+                loadOrNull(
+                        libsqlite3,
+                        "sqlite3_value_bytes",
+                        FunctionDescriptor.of(JAVA_INT, ADDRESS));
         sqlite3_value_double =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_value_double"),
-                                FunctionDescriptor.of(JAVA_DOUBLE, ADDRESS));
+                loadOrNull(
+                        libsqlite3,
+                        "sqlite3_value_double",
+                        FunctionDescriptor.of(JAVA_DOUBLE, ADDRESS));
         sqlite3_value_int =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_value_int"),
-                                FunctionDescriptor.of(JAVA_INT, ADDRESS));
+                loadOrNull(
+                        libsqlite3, "sqlite3_value_int", FunctionDescriptor.of(JAVA_INT, ADDRESS));
         sqlite3_value_int64 =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_value_int64"),
-                                FunctionDescriptor.of(JAVA_LONG, ADDRESS));
+                loadOrNull(
+                        libsqlite3,
+                        "sqlite3_value_int64",
+                        FunctionDescriptor.of(JAVA_LONG, ADDRESS));
         sqlite3_value_text =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_value_text"),
-                                FunctionDescriptor.of(ADDRESS, ADDRESS));
+                loadOrNull(
+                        libsqlite3, "sqlite3_value_text", FunctionDescriptor.of(ADDRESS, ADDRESS));
         sqlite3_value_type =
-                Linker.nativeLinker()
-                        .downcallHandle(
-                                libsqlite3.findOrThrow("sqlite3_value_type"),
-                                FunctionDescriptor.of(JAVA_INT, ADDRESS));
+                loadOrNull(
+                        libsqlite3, "sqlite3_value_type", FunctionDescriptor.of(JAVA_INT, ADDRESS));
+    }
+
+    private static MethodHandle loadOrNull(
+            SymbolLookup libsqlite3, String name, FunctionDescriptor function) {
+        Optional<MemorySegment> address = libsqlite3.find(name);
+        if (address.isPresent()) {
+            return Linker.nativeLinker().downcallHandle(address.get(), function);
+        } else {
+            logger.warn(
+                    () ->
+                            name
+                                    + " not found in loaded SQLite library. An exception will be thrown if it is called.");
+            return null;
+        }
     }
 
     static int sqlite3_backup_finish(MemorySegment p) {
@@ -630,7 +687,11 @@ class sqlite_h {
 
     static long sqlite3_changes64(MemorySegment db) {
         try {
-            return (long) sqlite3_changes64.invokeExact(db);
+            if (sqlite3_changes64 != null) {
+                return (long) sqlite3_changes64.invokeExact(db);
+            } else {
+                return (int) sqlite3_changes.invokeExact(db);
+            }
         } catch (Throwable e) {
             throw new AssertionError(e);
         }
@@ -966,9 +1027,9 @@ class sqlite_h {
         }
     }
 
-    static MemorySegment sqlite3_malloc64(long n) {
+    static MemorySegment sqlite3_malloc(int n) {
         try {
-            return (MemorySegment) sqlite3_malloc64.invokeExact(n);
+            return (MemorySegment) sqlite3_malloc.invokeExact(n);
         } catch (Throwable e) {
             throw new AssertionError(e);
         }
@@ -1142,7 +1203,11 @@ class sqlite_h {
 
     static long sqlite3_total_changes64(MemorySegment db) {
         try {
-            return (long) sqlite3_total_changes64.invokeExact(db);
+            if (sqlite3_total_changes64 != null) {
+                return (long) sqlite3_total_changes64.invokeExact(db);
+            } else {
+                return (int) sqlite3_total_changes.invokeExact(db);
+            }
         } catch (Throwable e) {
             throw new AssertionError(e);
         }

@@ -1120,8 +1120,8 @@ class NativeDB_c implements Codes {
             return;
         }
 
-        long size = jbuff.length;
-        MemorySegment sqlite_buff = sqlite3_malloc64(size);
+        int size = jbuff.length;
+        MemorySegment sqlite_buff = sqlite3_malloc(size);
         if (sqlite_buff.address() == NULL.address()) {
             throwex_msg("Failed to allocate native memory for database");
             return;
