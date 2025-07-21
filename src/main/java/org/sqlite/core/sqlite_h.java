@@ -100,8 +100,6 @@ class sqlite_h {
     private static final MethodHandle sqlite3_create_collation_v2;
     /// SQLite 3.0.1
     private static final MethodHandle sqlite3_create_function;
-    /// SQLite 3.7.3
-    private static final MethodHandle sqlite3_create_function_v2;
     /// SQLite 3.25.0
     private static final MethodHandle sqlite3_create_window_function;
     /// SQLite 3.23.0
@@ -130,8 +128,6 @@ class sqlite_h {
     private static final MethodHandle sqlite3_interrupt;
     /// SQLite 3.0.5
     private static final MethodHandle sqlite3_libversion;
-    /// SQLite 3.1.2
-    private static final MethodHandle sqlite3_libversion_number;
     /// SQLite 3.5.8
     private static final MethodHandle sqlite3_limit;
     /// SQLite 3.3.7
@@ -358,13 +354,6 @@ class sqlite_h {
                         FunctionDescriptor.of(
                                 JAVA_INT, ADDRESS, ADDRESS, JAVA_INT, JAVA_INT, ADDRESS, ADDRESS,
                                 ADDRESS, ADDRESS));
-        sqlite3_create_function_v2 =
-                loadOrNull(
-                        libsqlite3,
-                        "sqlite3_create_function_v2",
-                        FunctionDescriptor.of(
-                                JAVA_INT, ADDRESS, ADDRESS, JAVA_INT, JAVA_INT, ADDRESS, ADDRESS,
-                                ADDRESS, ADDRESS, ADDRESS));
         sqlite3_create_window_function =
                 loadOrNull(
                         libsqlite3,
@@ -422,9 +411,6 @@ class sqlite_h {
                 loadOrNull(libsqlite3, "sqlite3_interrupt", FunctionDescriptor.ofVoid(ADDRESS));
         sqlite3_libversion =
                 loadOrNull(libsqlite3, "sqlite3_libversion", FunctionDescriptor.of(ADDRESS));
-        sqlite3_libversion_number =
-                loadOrNull(
-                        libsqlite3, "sqlite3_libversion_number", FunctionDescriptor.of(JAVA_INT));
         sqlite3_limit =
                 loadOrNull(
                         libsqlite3,
@@ -856,25 +842,6 @@ class sqlite_h {
         }
     }
 
-    static int sqlite3_create_function_v2(
-            MemorySegment db,
-            MemorySegment zFunc,
-            int nArg,
-            int enc,
-            MemorySegment p,
-            MemorySegment xSFunc,
-            MemorySegment xStep,
-            MemorySegment xFinal,
-            MemorySegment xDestroy) {
-        try {
-            return (int)
-                    sqlite3_create_function_v2.invokeExact(
-                            db, zFunc, nArg, enc, p, xSFunc, xStep, xFinal, xDestroy);
-        } catch (Throwable e) {
-            throw new AssertionError(e);
-        }
-    }
-
     static int sqlite3_create_window_function(
             MemorySegment db,
             MemorySegment zFunc,
@@ -1006,14 +973,6 @@ class sqlite_h {
     static MemorySegment sqlite3_libversion() {
         try {
             return (MemorySegment) sqlite3_libversion.invokeExact();
-        } catch (Throwable e) {
-            throw new AssertionError(e);
-        }
-    }
-
-    static int sqlite3_libversion_number() {
-        try {
-            return (int) sqlite3_libversion_number.invokeExact();
         } catch (Throwable e) {
             throw new AssertionError(e);
         }
