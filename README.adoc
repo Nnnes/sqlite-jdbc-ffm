@@ -4,13 +4,15 @@ The goal of this fork of https://github.com/xerial/sqlite-jdbc[sqlite-jdbc] is t
 
 .Benefits
 * Each version of `sqlite-jdbc-ffm` supports many versions of SQLite, including future updates
-* No extra temporary files created at runtime
-* Much smaller JAR size _(WIP)_
-* May be measurably faster in some cases _(WIP)_
+* Much smaller JAR size
+* No temporary files extracted at runtime
+* May be measurably faster in some cases
 
 .Drawbacks
 * Must locate or supply your own SQLite shared library file (`libsqlite3.so`/`sqlite3.dll`/`libsqlite3.dylib`)
 ** This may make cross-platform distribution more trouble than it is worth
+* May be measurably slower in some cases
+* No GraalVM support
 
 .Requirements
 * JDK 23+
@@ -54,9 +56,9 @@ to tell it where to look. If you do not do this, Java will search the system PAT
 
 NOTE: The SQLite library file must be named `libsqlite3.so` (Linux), `sqlite3.dll` (Windows), or `libsqlite3.dylib` (macOS). _This should change in the future._
 
-You should https://openjdk.org/jeps/472#Enabling-native-access[enable native access] for module `org.xerial.sqlitejdbc` (or for `UNNAMED-MODULE` if not using JPMS). Future JDK releases will not allow you to use `sqlite-jdbc-ffm` (or `sqlite-jdbc`) without doing so.
+You should https://openjdk.org/jeps/472#Enabling-native-access[enable native access] for module `net.nnnes.sqlitejdbcffm` (or for `UNNAMED-MODULE` if not using JPMS). Future JDK releases will not allow you to use `sqlite-jdbc-ffm` (or `sqlite-jdbc`) without doing so.
 
-=== API differences from sqlite-jdbc
+=== API differences from `sqlite-jdbc`
 
 The JDBC API is identical.
 

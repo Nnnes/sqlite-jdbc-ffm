@@ -3,7 +3,6 @@ module org.xerial.sqlitejdbc {
     requires static org.slf4j;
     requires transitive java.sql;
     requires transitive java.sql.rowset;
-    requires static org.graalvm.nativeimage;
 
     exports org.sqlite;
     exports org.sqlite.core;
@@ -13,6 +12,6 @@ module org.xerial.sqlitejdbc {
     exports org.sqlite.jdbc4;
     exports org.sqlite.util;
 
-    provides java.sql.Driver with org.sqlite.JDBC;
-
+    provides java.sql.Driver with
+            org.sqlite.JDBC;
 }
