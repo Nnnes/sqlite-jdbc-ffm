@@ -1234,7 +1234,7 @@ public abstract class JDBC3DatabaseMetaData extends CoreDatabaseMetaData {
                 try (Statement statColAutoinc = conn.createStatement();
                         ResultSet rsColAutoinc =
                                 statColAutoinc.executeQuery(
-                                        "SELECT LIKE('%autoincrement%', LOWER(sql)) FROM sqlite_schema "
+                                        "SELECT LIKE('%autoincrement%', LOWER(sql)) FROM sqlite_master "
                                                 + "WHERE LOWER(name) = LOWER('"
                                                 + escape(tableName)
                                                 + "') AND TYPE IN ('table', 'view')")) {
@@ -1246,6 +1246,8 @@ public abstract class JDBC3DatabaseMetaData extends CoreDatabaseMetaData {
                 }
 
                 // For each table, get the column info and build into overall SQL
+                // TODO: table_xinfo() requires SQLite 3.26.0+
+                //  use sqlite3_table_column_metadata() instead?
                 String pragmaStatement = "PRAGMA table_xinfo('" + escape(tableName) + "')";
                 try (Statement colstat = conn.createStatement();
                         ResultSet rscol = colstat.executeQuery(pragmaStatement)) {
@@ -1536,7 +1538,7 @@ public abstract class JDBC3DatabaseMetaData extends CoreDatabaseMetaData {
             // retrieve table list
             ArrayList<String> tableList;
             try (ResultSet rs =
-                    stat.executeQuery("select name from sqlite_schema where type = 'table'")) {
+                    stat.executeQuery("select name from sqlite_master where type = 'table'")) {
                 tableList = new ArrayList<>();
 
                 while (rs.next()) {
@@ -1970,14 +1972,14 @@ public abstract class JDBC3DatabaseMetaData extends CoreDatabaseMetaData {
         sql.append("FROM").append("\n");
         sql.append("  (").append("\n");
         sql.append("    SELECT\n");
-        sql.append("      'sqlite_schema' AS NAME,\n");
+        sql.append("      'sqlite_master' AS NAME,\n");
         sql.append("      'SYSTEM TABLE' AS TYPE");
         sql.append("    UNION ALL").append("\n");
         sql.append("    SELECT").append("\n");
         sql.append("      NAME,").append("\n");
         sql.append("      UPPER(TYPE) AS TYPE").append("\n");
         sql.append("    FROM").append("\n");
-        sql.append("      sqlite_schema").append("\n");
+        sql.append("      sqlite_master").append("\n");
         sql.append("    WHERE").append("\n");
         sql.append("      NAME NOT LIKE 'sqlite\\_%' ESCAPE '\\'").append("\n");
         sql.append("      AND UPPER(TYPE) IN ('TABLE', 'VIEW')").append("\n");
@@ -1992,7 +1994,7 @@ public abstract class JDBC3DatabaseMetaData extends CoreDatabaseMetaData {
         sql.append("      NAME,").append("\n");
         sql.append("      'SYSTEM TABLE' AS TYPE").append("\n");
         sql.append("    FROM").append("\n");
-        sql.append("      sqlite_schema").append("\n");
+        sql.append("      sqlite_master").append("\n");
         sql.append("    WHERE").append("\n");
         sql.append("      NAME LIKE 'sqlite\\_%' ESCAPE '\\'").append("\n");
         sql.append("  )").append("\n");
@@ -2267,7 +2269,7 @@ public abstract class JDBC3DatabaseMetaData extends CoreDatabaseMetaData {
                     // read create SQL script for table
                     ResultSet rs =
                             stat.executeQuery(
-                                    "select sql from sqlite_schema where"
+                                    "select sql from sqlite_master where"
                                             + " lower(name) = lower('"
                                             + escape(table)
                                             + "') and type in ('table', 'view')")) {
@@ -2388,7 +2390,7 @@ public abstract class JDBC3DatabaseMetaData extends CoreDatabaseMetaData {
             try (Statement stat2 = conn.createStatement();
                     ResultSet rs =
                             stat2.executeQuery(
-                                    "select sql from sqlite_schema where"
+                                    "select sql from sqlite_master where"
                                             + " lower(name) = lower('"
                                             + escape(tbl)
                                             + "')")) {

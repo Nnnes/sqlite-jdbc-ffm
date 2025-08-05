@@ -11,13 +11,18 @@ The goal of this fork of https://github.com/xerial/sqlite-jdbc[sqlite-jdbc] is t
 .Drawbacks
 * Must locate or supply your own SQLite shared library file (`libsqlite3.so`/`sqlite3.dll`/`libsqlite3.dylib`)
 ** This may make cross-platform distribution more trouble than it is worth
+* No GraalVM Native Image support
 * May be measurably slower in some cases
-* No GraalVM support
 
 .Requirements
 * JDK 23+
-* SQLite 3.37.0+
-** Currently, the SQLite library must include every function used by `sqlite-jdbc-ffm` when it is loaded. Many existing SQLite libraries do not support serialization/deserialization in particular. _This should change in the future._
+* SQLite 3.7.13+
+** 3.5.0 (2007-09-04) has not been tested, but likely works to some extent (if you can find a binary for your architecture).
+** 3.7.13 (2012-06-11) is the earliest version that has been tested. Many features do not work, but it is possible to read and write to databases.
+** 3.26.0+ (2018-12-01) is strongly recommended.
+** 3.37.0+ (2021-11-27) is recommended for full feature support.
+
+NOTE: These are SQLite library versions, not database versions. An SQLite library should always be able to read a database modified by any earlier library, but may not always be able to read databases modified by newer library versions.
 
 === Usage
 

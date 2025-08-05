@@ -91,7 +91,7 @@ public class JDBCTest {
             connection.setAutoCommit(false);
             // execute a statement
             try (Statement statement = connection.createStatement()) {
-                boolean success = statement.execute("SELECT * FROM sqlite_schema");
+                boolean success = statement.execute("SELECT * FROM sqlite_master");
                 assertThat(success).isTrue();
             }
             // try to assign read-only
@@ -109,7 +109,7 @@ public class JDBCTest {
             connection.setReadOnly(true);
             // execute a statement
             try (Statement statement = connection.createStatement()) {
-                boolean success = statement.execute("SELECT * FROM sqlite_schema");
+                boolean success = statement.execute("SELECT * FROM sqlite_master");
                 assertThat(success).isTrue();
             }
             connection.commit();
@@ -132,7 +132,7 @@ public class JDBCTest {
             // execute a statement
             try (Statement statement = connection.createStatement()) {
                 System.out.println("Executing query");
-                boolean success = statement.execute("SELECT * FROM sqlite_schema");
+                boolean success = statement.execute("SELECT * FROM sqlite_master");
                 assertThat(success).isTrue();
             } finally {
                 System.out.println("Closing statement");
@@ -146,7 +146,7 @@ public class JDBCTest {
             // execute a statement
             try (Statement statement2 = connection.createStatement()) {
                 System.out.println("Executing query 2");
-                boolean success = statement2.execute("SELECT * FROM sqlite_schema");
+                boolean success = statement2.execute("SELECT * FROM sqlite_master");
                 assertThat(success).isTrue();
             } finally {
                 System.out.println("Closing statement 2");

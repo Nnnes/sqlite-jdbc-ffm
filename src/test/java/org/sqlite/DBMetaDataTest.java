@@ -55,7 +55,7 @@ public class DBMetaDataTest {
         stat.close();
 
         assertThat(rs.next()).isTrue();
-        assertThat(rs.getString("TABLE_NAME")).isEqualTo("sqlite_schema");
+        assertThat(rs.getString("TABLE_NAME")).matches("sqlite_(master|schema)");
         assertThat(rs.getString("TABLE_TYPE")).isEqualTo("SYSTEM TABLE");
         assertThat(rs.next()).isTrue();
         assertThat(rs.getString("TABLE_NAME")).isEqualTo("test"); // 3
@@ -92,7 +92,7 @@ public class DBMetaDataTest {
 
         rs = meta.getTables(null, null, null, new String[] {"system table"});
         assertThat(rs.next()).isTrue();
-        assertThat(rs.getString("TABLE_NAME")).isEqualTo("sqlite_schema");
+        assertThat(rs.getString("TABLE_NAME")).matches("sqlite_(master|schema)");
         assertThat(rs.next()).isFalse();
         rs.close();
     }
@@ -418,7 +418,7 @@ public class DBMetaDataTest {
         rs = meta.getColumns(null, null, "%", "%");
         // SYSTEM TABLE "sqlite_schema"
         assertThat(rs.next()).isTrue();
-        assertThat(rs.getString("TABLE_NAME")).isEqualTo("sqlite_schema");
+        assertThat(rs.getString("TABLE_NAME")).matches("sqlite_(master|schema)");
         assertThat(rs.getString("COLUMN_NAME")).isEqualTo("type");
         assertThat(rs.next()).isTrue();
         assertThat(rs.getString("COLUMN_NAME")).isEqualTo("name");
@@ -462,10 +462,10 @@ public class DBMetaDataTest {
         assertThat(rs.next()).isFalse();
         assertThat(rs.getMetaData().getColumnCount()).isEqualTo(24);
 
-        rs = meta.getColumns(null, null, "sqlite_schema", "%");
+        rs = meta.getColumns(null, null, "sqlite_master", "%");
         // SYSTEM TABLE "sqlite_schema"
         assertThat(rs.next()).isTrue();
-        assertThat(rs.getString("TABLE_NAME")).isEqualTo("sqlite_schema");
+        assertThat(rs.getString("TABLE_NAME")).matches("sqlite_(master|schema)");
         assertThat(rs.getString("COLUMN_NAME")).isEqualTo("type");
         assertThat(rs.next()).isTrue();
         assertThat(rs.getString("COLUMN_NAME")).isEqualTo("name");
@@ -1063,7 +1063,7 @@ public class DBMetaDataTest {
         assertThat(rsTables.getString("TABLE_TYPE")).isEqualTo("GLOBAL TEMPORARY");
 
         assertThat(rsTables.next()).isTrue();
-        assertThat(rsTables.getString("TABLE_NAME")).isEqualTo("sqlite_schema");
+        assertThat(rsTables.getString("TABLE_NAME")).matches("sqlite_(master|schema)");
         assertThat(rsTables.getString("TABLE_TYPE")).isEqualTo("SYSTEM TABLE");
 
         assertThat(rsTables.next()).isTrue();

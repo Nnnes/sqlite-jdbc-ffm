@@ -203,7 +203,7 @@ public class SQLiteConfig {
                         passwordPragma = "pragma key = '%s'";
                     }
                     stat.execute(String.format(passwordPragma, password.replace("'", "''")));
-                    stat.execute("select 1 from sqlite_schema");
+                    stat.execute("select 1 from sqlite_master");
                 }
             }
 
