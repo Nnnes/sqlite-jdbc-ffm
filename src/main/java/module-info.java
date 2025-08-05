@@ -1,5 +1,4 @@
-module org.xerial.sqlitejdbc {
-
+module net.nnnes.sqlitejdbcffm {
     requires static org.slf4j;
     requires transitive java.sql;
     requires transitive java.sql.rowset;

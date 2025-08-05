@@ -2,12 +2,12 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/maven-v4_0_0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.xerial</groupId>
-    <artifactId>sqlite-jdbc</artifactId>
-    <version>3.50.3.1-SNAPSHOT</version>
-    <name>SQLite JDBC</name>
-    <description>SQLite JDBC library</description>
-    <url>https://github.com/xerial/sqlite-jdbc</url>
+    <groupId>net.nnnes</groupId>
+    <artifactId>sqlite-jdbc-ffm</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+    <name>SQLite JDBC FFM</name>
+    <description>SQLite JDBC FFM library</description>
+    <url>https://github.com/nnnes/sqlite-jdbc-ffm</url>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -28,16 +28,9 @@
 
     <developers>
         <developer>
-            <id>leo</id>
-            <name>Taro L. Saito</name>
-            <email>leo@xerial.org</email>
-            <organization>Xerial Project</organization>
-            <roles>
-                <role>Architect</role>
-                <role>Project Manager</role>
-                <role>Chief Developer</role>
-            </roles>
-            <timezone>+9</timezone>
+            <id>nnnes</id>
+            <name>Nnnes</name>
+            <email>N@nnn.es</email>
         </developer>
     </developers>
 
@@ -154,7 +147,7 @@
                 <artifactId>maven-bundle-plugin</artifactId>
                 <configuration>
                     <instructions>
-                        <Bundle-SymbolicName>org.xerial.sqlite-jdbc;singleton:=true</Bundle-SymbolicName>
+                        <Bundle-SymbolicName>net.nnnes.sqlite-jdbc-ffm;singleton:=true</Bundle-SymbolicName>
                         <Import-Package>
                             *;resolution:=optional
                         </Import-Package>
@@ -259,9 +252,9 @@
     </build>
 
     <scm>
-        <connection>scm:git:git://github.com/xerial/sqlite-jdbc.git</connection>
-        <developerConnection>scm:git:git@github.com:xerial/sqlite-jdbc.git</developerConnection>
-        <url>https://github.com/xerial/sqlite-jdbc</url>
+        <connection>scm:git:git://github.com/nnnes/sqlite-jdbc-ffm.git</connection>
+        <developerConnection>scm:git:git@github.com:nnnes/sqlite-jdbc-ffm.git</developerConnection>
+        <url>https://github.com/nnnes/sqlite-jdbc-ffm</url>
     </scm>
 
     <profiles>
