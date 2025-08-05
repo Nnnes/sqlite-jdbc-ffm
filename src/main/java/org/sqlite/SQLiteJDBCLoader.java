@@ -24,7 +24,11 @@
 // --------------------------------------
 package org.sqlite;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.Files;
@@ -34,10 +38,11 @@ import java.nio.file.StandardCopyOption;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Properties;
 import java.util.UUID;
 import java.util.stream.Stream;
 import org.sqlite.util.LibraryLoaderUtil;
@@ -392,43 +397,15 @@ public class SQLiteJDBCLoader {
         return VersionHolder.VERSION;
     }
 
-    /**
-     * This class will load the version from resources during <clinit>. By initializing this at
-     * build-time in native-image, the resources do not need to be included in the native
-     * executable, and we're eliminating the IO operations as well.
-     */
     public static final class VersionHolder {
         private static final String VERSION;
 
         static {
-            URL versionFile =
-                    VersionHolder.class.getResource(
-                            "/META-INF/maven/org.xerial/sqlite-jdbc/pom.properties");
-            if (versionFile == null) {
-                versionFile =
-                        VersionHolder.class.getResource(
-                                "/META-INF/maven/org.xerial/sqlite-jdbc/VERSION");
-            }
-
             String version = "unknown";
-            try {
-                if (versionFile != null) {
-                    Properties versionData = new Properties();
-                    versionData.load(versionFile.openStream());
-                    version = versionData.getProperty("version", version);
-                    version = version.trim().replaceAll("[^0-9\\.]", "");
-                }
-            } catch (IOException e) {
-                // inline creation of logger to avoid build-time initialization of the logging
-                // framework in native-image
-                URL finalVersionFile = versionFile;
-                LoggerFactory.getLogger(VersionHolder.class)
-                        .error(
-                                () ->
-                                        MessageFormat.format(
-                                                "Could not read version from file: {0}",
-                                                finalVersionFile),
-                                e);
+            try (SQLiteConnection conn =
+                    (SQLiteConnection) DriverManager.getConnection("jdbc:sqlite:")) {
+                version = conn.libversion();
+            } catch (SQLException _) {
             }
             VERSION = version;
         }
