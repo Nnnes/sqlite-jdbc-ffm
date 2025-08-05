@@ -27,9 +27,7 @@ package org.sqlite;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-/**
- * SQLite library version methods
- */
+/** SQLite library version methods */
 public class SQLiteJDBCLoader {
     private static final String VERSION;
     private static final int MAJOR_VERSION;
@@ -38,7 +36,7 @@ public class SQLiteJDBCLoader {
     static {
         String version = "unknown";
         try (SQLiteConnection conn =
-                     (SQLiteConnection) DriverManager.getConnection("jdbc:sqlite:")) {
+                (SQLiteConnection) DriverManager.getConnection("jdbc:sqlite:")) {
             version = conn.libversion();
         } catch (SQLException _) {
         }
