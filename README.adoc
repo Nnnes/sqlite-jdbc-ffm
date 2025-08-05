@@ -1,10 +1,10 @@
 == sqlite-jdbc-ffm
 
-The goal of this fork of https://github.com/xerial/sqlite-jdbc[sqlite-jdbc] is to keep nearly _(see below)_ the same Java interface as the original library but remove the set of bundled native SQLite libraries and JNI bindings, instead using the JDK 22+ https://openjdk.org/jeps/454[Foreign Function & Memory API] to communicate with an external SQLite native library.
+The goal of this fork of https://github.com/xerial/sqlite-jdbc[sqlite-jdbc] is to keep the same JDBC interface and much of _(see below)_ the same Java interface as the original library but remove the set of bundled native SQLite libraries and JNI bindings, instead using the JDK 22+ https://openjdk.org/jeps/454[Foreign Function & Memory API] to communicate with an external SQLite native library.
 
 .Benefits
 * Each version of `sqlite-jdbc-ffm` supports many versions of SQLite, including future updates
-* Much smaller JAR size
+* Much smaller JAR size (<0.3 MB vs >14 MB)
 * No temporary files extracted at runtime
 * May be measurably faster in some cases
 
@@ -70,6 +70,8 @@ The JDBC API is identical.
 The SQLite library bundled with `sqlite-jdbc` includes some SQLite https://github.com/xerial/sqlite-jdbc/blob/master/src/main/ext/extension-functions.c[extension functions]. Follow the compilation instructions provided in that file if you need these. Note that https://sqlite.org/lang_mathfunc.html[many of the math functions] are present in SQLite 3.35.0+, provided it has been compiled to include them.
 
 All uses of `long` for raw memory addresses, mostly involving `org.sqlite.core.SafeStmtPtr`, have been changed to instead use `MemorySegment`. This includes 2 package-private fields in `org.sqlite.Function` and a large number of fields and methods in `org.sqlite.core.*` classes.
+
+Many classes in package `org.sqlite.util` and methods in `org.sqlite.SQLiteJDBCLoader` related to loading native libraries have been deleted.
 
 === Other notes
 

@@ -2,8 +2,6 @@ package org.sqlite.architecture;
 
 import static com.tngtech.archunit.base.DescribedPredicate.not;
 import static com.tngtech.archunit.core.domain.JavaClass.Predicates.belongToAnyOf;
-import static com.tngtech.archunit.core.domain.JavaClass.Predicates.equivalentTo;
-import static com.tngtech.archunit.lang.conditions.ArchPredicates.are;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 import static com.tngtech.archunit.library.GeneralCodingRules.*;
 
@@ -20,7 +18,6 @@ import com.tngtech.archunit.lang.ArchRule;
 import com.tngtech.archunit.lang.conditions.ArchConditions;
 import java.sql.DriverManager;
 import org.sqlite.util.LoggerFactory;
-import org.sqlite.util.OSInfo;
 
 @AnalyzeClasses(
         packages = "org.sqlite",
@@ -38,8 +35,7 @@ class CodingRulesTest {
 
     @ArchTest
     void no_access_to_standard_streams(JavaClasses importedClasses) {
-        NO_CLASSES_SHOULD_ACCESS_STANDARD_STREAMS.check(
-                importedClasses.that(are(not(equivalentTo(OSInfo.class)))));
+        NO_CLASSES_SHOULD_ACCESS_STANDARD_STREAMS.check(importedClasses);
     }
 
     @ArchTest
