@@ -23,12 +23,14 @@ import org.sqlite.Function;
 import org.sqlite.ProgressHandler;
 import org.sqlite.core.DB.ProgressObserver;
 
-/// Implements the functionality of the `NativeDB.c` of the original JNI version of `sqlite-jdbc` as
-/// closely as is reasonable using the Java 22+ Foreign Function & Memory API.
-///
-/// The most significant difference is that `NativeDB_c` keeps all pointers inside [MemorySegment]s
-/// to avoid the need to pass raw memory addresses around. This changes many of [SafeStmtPtr]'s
-/// public interfaces in particular.
+/**
+ * Implements the functionality of the {@code NativeDB.c} of the original JNI version of {@code
+ * sqlite-jdbc} as closely as is reasonable using the Java 22+ Foreign Function & Memory API.
+ *
+ * <p>The most significant difference is that {@link NativeDB_c} keeps all pointers inside {@link
+ * MemorySegment}s to avoid the need to pass raw memory addresses around. This changes many of
+ * {@link SafeStmtPtr}'s public interfaces in particular.
+ */
 class NativeDB_c implements Codes {
     private static final MemorySegment SQLITE_TRANSIENT =
             MemorySegment.ofAddress(sqlite_h.SQLITE_TRANSIENT);
@@ -37,7 +39,8 @@ class NativeDB_c implements Codes {
     private final MemorySegment commit_hook;
     private final MemorySegment rollback_hook;
     private final MemorySegment update_hook;
-    /// The pointer to the DB. Always [#ensureOpen()] before passing to a native function.
+
+    /** The pointer to the DB. Always {@link #ensureOpen()} before passing to a native function. */
     private MemorySegment db = null;
 
     NativeDB_c(NativeDB $this) {
@@ -76,13 +79,16 @@ class NativeDB_c implements Codes {
         }
     }
 
-    /// Reads a UTF-8 string from an address using a temporary arena. See
-    /// [MemorySegment#getString(long)]
-    ///
-    /// If there is already an available Arena, [#getString(MemorySegment, Arena)] should be used
-    /// instead.
-    /// @param segment a MemorySegment pointer to a null-terminated UTF-8 string
-    /// @return a Java string, or null if `segment.address()` is a null address
+    /**
+     * Reads a UTF-8 string from a zero-length memory segment using a temporary arena.
+     *
+     * <p>If there is already an available Arena, {@link #getString(MemorySegment, Arena)} should be
+     * used instead.
+     *
+     * @param segment a MemorySegment pointer to a null-terminated UTF-8 string
+     * @return a Java string, or null if {@code segment.address()} is a null address
+     * @see MemorySegment#getString(long)
+     */
     private static String getString(MemorySegment segment) {
         if (hasNullAddress(segment)) return null;
         try (Arena arena = Arena.ofConfined()) {
@@ -90,14 +96,17 @@ class NativeDB_c implements Codes {
         }
     }
 
-    /// Reads a UTF-8 string from an address using the provided arena. See
-    /// [MemorySegment#getString(long)]
-    ///
-    /// If there is not already an available temporary Arena, [#getString(MemorySegment)] should be
-    /// used instead.
-    /// @param segment a MemorySegment pointer to a null-terminated UTF-8 string
-    /// @param arena the Arena to be associated with the temporary reinterpreted MemorySegment
-    /// @return a Java string, or null if `segment.address()` is a null address
+    /**
+     * Reads a UTF-8 string from a zero-length memory segment using the provided arena.
+     *
+     * <p>If there is not already an available temporary Arena, {@link #getString(MemorySegment)}
+     * should be used instead.
+     *
+     * @param segment a MemorySegment pointer to a null-terminated UTF-8 string
+     * @param arena the Arena to be associated with the temporary reinterpreted MemorySegment
+     * @return a Java string, or null if {@code segment.address()} is a null address
+     * @see MemorySegment#getString(long)
+     */
     private static String getString(MemorySegment segment, Arena arena) {
         if (hasNullAddress(segment)) return null;
         return segment.reinterpret(Long.MAX_VALUE, arena, null)
@@ -774,9 +783,11 @@ class NativeDB_c implements Codes {
         }
     }
 
-    /// Does nothing if [#db] is open.
-    ///
-    /// @throws SQLException if `db` is closed
+    /**
+     * Does nothing if {@link #db} is open.
+     *
+     * @throws SQLException if {@link #db} is closed
+     */
     private void ensureOpen() throws SQLException {
         if (db == null) throw new SQLException("The database has been closed");
     }

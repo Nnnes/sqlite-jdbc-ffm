@@ -15,11 +15,13 @@ import java.util.Optional;
 import org.sqlite.util.Logger;
 import org.sqlite.util.LoggerFactory;
 
-/// FFM interface with `sqlite3` native library. Only functions and constants used in [NativeDB_c]
-/// have been included.
-///
-/// The SQLite version listed for each MethodHandle variable is the first version of SQLite that
-/// included that function and its signature.
+/**
+ * FFM interface with {@code sqlite3} native library. Only functions and constants used in {@link
+ * NativeDB_c} have been included.
+ *
+ * <p>The SQLite version listed for each MethodHandle variable is the first version of SQLite that
+ * included that function and its signature.
+ */
 class sqlite_h {
     static final long SQLITE_TRANSIENT = -1;
     static final int SQLITE_UTF8 = 1;
@@ -34,157 +36,232 @@ class sqlite_h {
     static final int SQLITE_FCNTL_SIZE_LIMIT = 36;
     private static final Logger logger = LoggerFactory.getLogger(sqlite_h.class);
 
-    /// SQLite 3.6.11
+    /** SQLite 3.6.11 */
     private static final MethodHandle sqlite3_backup_finish;
-    /// SQLite 3.6.11
+
+    /** SQLite 3.6.11 */
     private static final MethodHandle sqlite3_backup_init;
-    /// SQLite 3.6.11
+
+    /** SQLite 3.6.11 */
     private static final MethodHandle sqlite3_backup_pagecount;
-    /// SQLite 3.6.11
+
+    /** SQLite 3.6.11 */
     private static final MethodHandle sqlite3_backup_remaining;
-    /// SQLite 3.6.11
+
+    /** SQLite 3.6.11 */
     private static final MethodHandle sqlite3_backup_step;
-    /// SQLite 3.0.0
+
+    /** SQLite 3.0.0 */
     private static final MethodHandle sqlite3_bind_blob;
-    /// SQLite 3.0.0
+
+    /** SQLite 3.0.0 */
     private static final MethodHandle sqlite3_bind_double;
-    /// SQLite 3.0.0
+
+    /** SQLite 3.0.0 */
     private static final MethodHandle sqlite3_bind_int;
-    /// SQLite 3.0.0
+
+    /** SQLite 3.0.0 */
     private static final MethodHandle sqlite3_bind_int64;
-    /// SQLite 3.0.0
+
+    /** SQLite 3.0.0 */
     private static final MethodHandle sqlite3_bind_null;
-    /// SQLite 3.0.3
+
+    /** SQLite 3.0.3 */
     private static final MethodHandle sqlite3_bind_parameter_count;
-    /// SQLite 3.0.0
+
+    /** SQLite 3.0.0 */
     private static final MethodHandle sqlite3_bind_text;
-    /// SQLite 3.0.1
+
+    /** SQLite 3.0.1 */
     private static final MethodHandle sqlite3_busy_handler;
-    /// SQLite 3.0.1
+
+    /** SQLite 3.0.1 */
     private static final MethodHandle sqlite3_busy_timeout;
-    /// SQLite 3.0.0
+
+    /** SQLite 3.0.0 */
     private static final MethodHandle sqlite3_changes;
-    /// SQLite 3.37.0
+
+    /** SQLite 3.37.0 */
     private static final MethodHandle sqlite3_changes64;
-    /// SQLite 3.1.0
+
+    /** SQLite 3.1.0 */
     private static final MethodHandle sqlite3_clear_bindings;
-    /// SQLite 3.0.0
+
+    /** SQLite 3.0.0 */
     private static final MethodHandle sqlite3_close;
-    /// SQLite 3.0.0
+
+    /** SQLite 3.0.0 */
     private static final MethodHandle sqlite3_column_blob;
-    /// SQLite 3.0.0
+
+    /** SQLite 3.0.0 */
     private static final MethodHandle sqlite3_column_bytes;
-    /// SQLite 3.0.0
+
+    /** SQLite 3.0.0 */
     private static final MethodHandle sqlite3_column_count;
-    /// SQLite 3.0.0
+
+    /** SQLite 3.0.0 */
     private static final MethodHandle sqlite3_column_decltype;
-    /// SQLite 3.0.0
+
+    /** SQLite 3.0.0 */
     private static final MethodHandle sqlite3_column_double;
-    /// SQLite 3.0.0
+
+    /** SQLite 3.0.0 */
     private static final MethodHandle sqlite3_column_int;
-    /// SQLite 3.0.0
+
+    /** SQLite 3.0.0 */
     private static final MethodHandle sqlite3_column_int64;
-    /// SQLite 3.0.0
+
+    /** SQLite 3.0.0 */
     private static final MethodHandle sqlite3_column_name;
-    /// SQLite 3.3.5
+
+    /** SQLite 3.3.5 */
     private static final MethodHandle sqlite3_column_table_name;
-    /// SQLite 3.0.0
+
+    /** SQLite 3.0.0 */
     private static final MethodHandle sqlite3_column_text;
-    /// SQLite 3.0.0
+
+    /** SQLite 3.0.0 */
     private static final MethodHandle sqlite3_column_type;
-    /// SQLite 3.0.0
+
+    /** SQLite 3.0.0 */
     private static final MethodHandle sqlite3_commit_hook;
-    /// SQLite 3.0.0
+
+    /** SQLite 3.0.0 */
     private static final MethodHandle sqlite3_create_collation;
-    /// SQLite 3.4.0
+
+    /** SQLite 3.4.0 */
     private static final MethodHandle sqlite3_create_collation_v2;
-    /// SQLite 3.0.1
+
+    /** SQLite 3.0.1 */
     private static final MethodHandle sqlite3_create_function;
-    /// SQLite 3.25.0
+
+    /** SQLite 3.25.0 */
     private static final MethodHandle sqlite3_create_window_function;
-    /// SQLite 3.23.0
+
+    /** SQLite 3.23.0 */
     private static final MethodHandle sqlite3_deserialize;
-    /// SQLite 3.3.7
+
+    /** SQLite 3.3.7 */
     private static final MethodHandle sqlite3_enable_load_extension;
-    /// SQLite 3.3.0
+
+    /** SQLite 3.3.0 */
     private static final MethodHandle sqlite3_enable_shared_cache;
-    /// SQLite 3.0.0
+
+    /** SQLite 3.0.0 */
     private static final MethodHandle sqlite3_errcode;
-    /// SQLite 3.0.0
+
+    /** SQLite 3.0.0 */
     private static final MethodHandle sqlite3_errmsg;
-    /// SQLite 3.0.0
+
+    /** SQLite 3.0.0 */
     private static final MethodHandle sqlite3_exec;
-    /// SQLite 3.6.5
+
+    /** SQLite 3.6.5 */
     private static final MethodHandle sqlite3_extended_errcode;
-    /// SQLite 3.3.8
+
+    /** SQLite 3.3.8 */
     private static final MethodHandle sqlite3_extended_result_codes;
-    /// SQLite 3.5.0
+
+    /** SQLite 3.5.0 */
     private static final MethodHandle sqlite3_file_control;
-    /// SQLite 3.0.1
+
+    /** SQLite 3.0.1 */
     private static final MethodHandle sqlite3_finalize;
-    /// SQLite 3.0.0
+
+    /** SQLite 3.0.0 */
     private static final MethodHandle sqlite3_free;
-    /// SQLite 3.0.0
+
+    /** SQLite 3.0.0 */
     private static final MethodHandle sqlite3_interrupt;
-    /// SQLite 3.0.5
+
+    /** SQLite 3.0.5 */
     private static final MethodHandle sqlite3_libversion;
-    /// SQLite 3.5.8
+
+    /** SQLite 3.5.8 */
     private static final MethodHandle sqlite3_limit;
-    /// SQLite 3.3.7
+
+    /** SQLite 3.3.7 */
     private static final MethodHandle sqlite3_malloc;
-    /// SQLite 3.5.0
+
+    /** SQLite 3.5.0 */
     private static final MethodHandle sqlite3_open_v2;
-    /// SQLite 3.3.9
+
+    /** SQLite 3.3.9 */
     private static final MethodHandle sqlite3_prepare_v2;
-    /// SQLite 3.0.0
+
+    /** SQLite 3.0.0 */
     private static final MethodHandle sqlite3_progress_handler;
-    /// SQLite 3.0.1
+
+    /** SQLite 3.0.1 */
     private static final MethodHandle sqlite3_reset;
-    /// SQLite 3.0.0
+
+    /** SQLite 3.0.0 */
     private static final MethodHandle sqlite3_result_blob;
-    /// SQLite 3.0.0
+
+    /** SQLite 3.0.0 */
     private static final MethodHandle sqlite3_result_double;
-    /// SQLite 3.0.0
+
+    /** SQLite 3.0.0 */
     private static final MethodHandle sqlite3_result_error;
-    /// SQLite 3.0.0
+
+    /** SQLite 3.0.0 */
     private static final MethodHandle sqlite3_result_int;
-    /// SQLite 3.0.0
+
+    /** SQLite 3.0.0 */
     private static final MethodHandle sqlite3_result_int64;
-    /// SQLite 3.0.0
+
+    /** SQLite 3.0.0 */
     private static final MethodHandle sqlite3_result_null;
-    /// SQLite 3.0.0
+
+    /** SQLite 3.0.0 */
     private static final MethodHandle sqlite3_result_text;
-    /// SQLite 3.3.0
+
+    /** SQLite 3.3.0 */
     private static final MethodHandle sqlite3_rollback_hook;
-    /// SQLite 3.23.0
+
+    /** SQLite 3.23.0 */
     private static final MethodHandle sqlite3_serialize;
-    /// SQLite 3.1.0
+
+    /** SQLite 3.1.0 */
     private static final MethodHandle sqlite3_sleep;
-    /// SQLite 3.0.1
+
+    /** SQLite 3.0.1 */
     private static final MethodHandle sqlite3_step;
-    /// SQLite 3.6.17
+
+    /** SQLite 3.6.17 */
     private static final MethodHandle sqlite3_strnicmp;
-    /// SQLite 3.3.5
+
+    /** SQLite 3.3.5 */
     private static final MethodHandle sqlite3_table_column_metadata;
-    /// SQLite 3.0.1
+
+    /** SQLite 3.0.1 */
     private static final MethodHandle sqlite3_total_changes;
-    /// SQLite 3.37.0
+
+    /** SQLite 3.37.0 */
     private static final MethodHandle sqlite3_total_changes64;
-    /// SQLite 3.3.0
+
+    /** SQLite 3.3.0 */
     private static final MethodHandle sqlite3_update_hook;
-    /// SQLite 3.0.0
+
+    /** SQLite 3.0.0 */
     private static final MethodHandle sqlite3_value_blob;
-    /// SQLite 3.0.0
+
+    /** SQLite 3.0.0 */
     private static final MethodHandle sqlite3_value_bytes;
-    /// SQLite 3.0.0
+
+    /** SQLite 3.0.0 */
     private static final MethodHandle sqlite3_value_double;
-    /// SQLite 3.0.0
+
+    /** SQLite 3.0.0 */
     private static final MethodHandle sqlite3_value_int;
-    /// SQLite 3.0.0
+
+    /** SQLite 3.0.0 */
     private static final MethodHandle sqlite3_value_int64;
-    /// SQLite 3.0.0
+
+    /** SQLite 3.0.0 */
     private static final MethodHandle sqlite3_value_text;
-    /// SQLite 3.0.0
+
+    /** SQLite 3.0.0 */
     private static final MethodHandle sqlite3_value_type;
 
     static {

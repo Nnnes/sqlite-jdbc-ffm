@@ -29,12 +29,14 @@ import org.sqlite.SQLiteConfig;
 import org.sqlite.util.Logger;
 import org.sqlite.util.LoggerFactory;
 
-/// This class interfaces with [NativeDB_c] in the same way as it does with `NativeDB.c` in the
-/// original JNI version of `sqlite-jdbc`.
-///
-/// Conversions between [String]s and UTF-8 `byte[]`s have been replaced with built-in FFM methods
-/// such as [Arena#allocateFrom(java.lang.String)] and [MemorySegment#getString(long,
-/// java.nio.charset.Charset)].
+/**
+ * This class interfaces with {@link NativeDB_c} in the same way as it does with {@code NativeDB.c}
+ * in the original JNI version of {@code sqlite-jdbc}.
+ *
+ * <p>Conversions between {@link String}s and UTF-8 {@code byte[]}s have been replaced with built-in
+ * FFM methods such as {@link Arena#allocateFrom(java.lang.String)} and {@link
+ * MemorySegment#getString(long, java.nio.charset.Charset)}.
+ */
 public final class NativeDB extends DB {
     private static final Logger logger = LoggerFactory.getLogger(NativeDB.class);
     private static final int DEFAULT_BACKUP_BUSY_SLEEP_TIME_MILLIS = 100;
