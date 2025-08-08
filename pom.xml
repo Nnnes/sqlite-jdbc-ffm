@@ -96,7 +96,7 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.14.0</version>
                 <configuration>
-                    <release>23</release>
+                    <release>22</release>
                 </configuration>
                 <executions>
                     <execution>
@@ -220,7 +220,7 @@
                                     <version>3.2.5</version>
                                 </requireMavenVersion>
                                 <requireJavaVersion>
-                                    <version>23</version>
+                                    <version>22</version>
                                 </requireJavaVersion>
                             </rules>
                         </configuration>
