@@ -73,6 +73,8 @@ All uses of `long` for raw memory addresses, mostly involving `org.sqlite.core.S
 
 Many classes in package `org.sqlite.util` and methods in `org.sqlite.SQLiteJDBCLoader` related to loading native libraries have been deleted.
 
+The embedded copy of Apache FastDateFormat in `org.sqlite.date` has been deleted in favor of `java.time.format.DateTimeFormatter`, which is more rigid when parsing date strings. Use `org.sqlite.SQLiteConnectionConfig#setDateStringFormat(String)` as needed.
+
 === Other notes
 
 `sqlite-jdbc-ffm` passes all relevant tests included with `sqlite-jdbc` on Linux x64 and Windows x64. Some native functions have no test coverage yet.
