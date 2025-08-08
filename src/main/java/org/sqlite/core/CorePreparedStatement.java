@@ -16,13 +16,13 @@
 
 package org.sqlite.core;
 
-import java.sql.Date;
 import java.sql.SQLException;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Calendar;
 import org.sqlite.SQLiteConnection;
 import org.sqlite.SQLiteConnectionConfig;
-import org.sqlite.date.FastDateFormat;
 import org.sqlite.jdbc3.JDBC3Connection;
 import org.sqlite.jdbc4.JDBC4Statement;
 
@@ -119,9 +119,9 @@ public abstract class CorePreparedStatement extends JDBC4Statement {
             case TEXT:
                 batch(
                         pos,
-                        FastDateFormat.getInstance(
-                                        config.getDateStringFormat(), calendar.getTimeZone())
-                                .format(new Date(value)));
+                        DateTimeFormatter.ofPattern(config.getDateStringFormat())
+                                .withZone(calendar.getTimeZone().toZoneId())
+                                .format(Instant.ofEpochMilli(value)));
                 break;
 
             case REAL:

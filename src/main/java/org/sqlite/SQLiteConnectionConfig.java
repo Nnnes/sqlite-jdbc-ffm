@@ -3,10 +3,10 @@ package org.sqlite;
 import static org.sqlite.SQLiteConfig.DEFAULT_DATE_STRING_FORMAT;
 
 import java.sql.Connection;
+import java.time.format.DateTimeFormatter;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Properties;
-import org.sqlite.date.FastDateFormat;
 
 /** Connection local configurations */
 public class SQLiteConnectionConfig implements Cloneable {
@@ -14,7 +14,7 @@ public class SQLiteConnectionConfig implements Cloneable {
     private SQLiteConfig.DatePrecision datePrecision =
             SQLiteConfig.DatePrecision.MILLISECONDS; // Calendar.SECOND or Calendar.MILLISECOND
     private String dateStringFormat = DEFAULT_DATE_STRING_FORMAT;
-    private FastDateFormat dateFormat = FastDateFormat.getInstance(dateStringFormat);
+    private DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern(dateStringFormat);
 
     private int transactionIsolation = Connection.TRANSACTION_SERIALIZABLE;
     private SQLiteConfig.TransactionMode transactionMode = SQLiteConfig.TransactionMode.DEFERRED;
@@ -99,11 +99,11 @@ public class SQLiteConnectionConfig implements Cloneable {
 
     public void setDateStringFormat(String dateStringFormat) {
         this.dateStringFormat = dateStringFormat;
-        this.dateFormat = FastDateFormat.getInstance(dateStringFormat);
+        this.dateFormatter = DateTimeFormatter.ofPattern(dateStringFormat);
     }
 
-    public FastDateFormat getDateFormat() {
-        return dateFormat;
+    public DateTimeFormatter getDateFormatter() {
+        return dateFormatter;
     }
 
     public boolean isAutoCommit() {

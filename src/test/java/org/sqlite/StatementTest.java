@@ -586,7 +586,7 @@ public class StatementTest {
 
     @Test
     public void dateTimeTest() throws SQLException {
-        Date day = new Date(new java.util.Date().getTime());
+        Date day = new Date(System.currentTimeMillis());
 
         stat.executeUpdate("create table day (time datetime)");
         PreparedStatement prep = conn.prepareStatement("insert into day values(?)");

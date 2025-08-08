@@ -20,15 +20,15 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.Properties;
 import java.util.TimeZone;
 import org.junit.jupiter.api.Test;
-import org.sqlite.date.FastDateFormat;
 
 public class QueryTest {
     public Connection getConnection() throws SQLException {
@@ -89,11 +89,13 @@ public class QueryTest {
 
         conn.createStatement().execute("create table sample (start_time datetime)");
 
-        Date now = new Date();
+        Instant now = Instant.now();
         String date =
-                FastDateFormat.getInstance(SQLiteConfig.DEFAULT_DATE_STRING_FORMAT).format(now);
+                DateTimeFormatter.ofPattern(SQLiteConfig.DEFAULT_DATE_STRING_FORMAT)
+                        .withZone(TimeZone.getDefault().toZoneId())
+                        .format(now);
 
-        conn.createStatement().execute("insert into sample values(" + now.getTime() + ")");
+        conn.createStatement().execute("insert into sample values(" + now.toEpochMilli() + ")");
         conn.createStatement().execute("insert into sample values('" + date + "')");
 
         ResultSet rs = conn.createStatement().executeQuery("select * from sample");
@@ -103,7 +105,7 @@ public class QueryTest {
         assertThat(rs.getDate(1)).isEqualTo(now);
 
         PreparedStatement stmt = conn.prepareStatement("insert into sample values(?)");
-        stmt.setDate(1, new java.sql.Date(now.getTime()));
+        stmt.setDate(1, new java.sql.Date(now.toEpochMilli()));
     }
 
     @Test
@@ -129,6 +131,7 @@ public class QueryTest {
     }
 
     @Test
+    // Unsure what the original goal here was
     public void dateTimeWithTimeZoneTest() throws Exception {
         Properties properties = new Properties();
         properties.setProperty(SQLiteConfig.Pragma.DATE_CLASS.pragmaName, "text");
@@ -139,17 +142,27 @@ public class QueryTest {
         }
 
         TimeZone utcTimeZone = TimeZone.getTimeZone("UTC");
+        // Invalid TimeZone ID; defaults to "GMT"
         TimeZone customTimeZone = TimeZone.getTimeZone("+3");
         Calendar utcCalendar = Calendar.getInstance(utcTimeZone);
         Calendar customCalendar = Calendar.getInstance(customTimeZone);
 
-        java.sql.Date now = new java.sql.Date(new Date().getTime());
-        FastDateFormat customFormat =
-                FastDateFormat.getInstance(SQLiteConfig.DEFAULT_DATE_STRING_FORMAT, customTimeZone);
-        FastDateFormat utcFormat =
-                FastDateFormat.getInstance(SQLiteConfig.DEFAULT_DATE_STRING_FORMAT, utcTimeZone);
+        // java.sql.Date is not supposed to support hours/minutes/seconds/millis
+        java.sql.Date now = new java.sql.Date(System.currentTimeMillis());
+        DateTimeFormatter customFormatter =
+                DateTimeFormatter.ofPattern(SQLiteConfig.DEFAULT_DATE_STRING_FORMAT)
+                        .withZone(customTimeZone.toZoneId());
+        DateTimeFormatter utcFormatter =
+                DateTimeFormatter.ofPattern(SQLiteConfig.DEFAULT_DATE_STRING_FORMAT)
+                        .withZone(utcTimeZone.toZoneId());
+        // ???
         java.sql.Date nowLikeCustomZoneIsUtc =
-                new java.sql.Date(utcFormat.parse(customFormat.format(now)).getTime());
+                new java.sql.Date(
+                        Instant.from(
+                                        utcFormatter.parse(
+                                                customFormatter.format(
+                                                        Instant.ofEpochMilli(now.getTime()))))
+                                .toEpochMilli());
 
         try (PreparedStatement preparedStatement =
                 conn.prepareStatement("insert into sample (date_time) values(?)")) {

@@ -15,16 +15,18 @@ import java.sql.Statement;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.OptionalLong;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.sqlite.core.CoreResultSet;
 import org.sqlite.core.CoreStatement;
 import org.sqlite.core.DB;
-import org.sqlite.date.FastDateFormat;
 
 public abstract class JDBC3ResultSet extends CoreResultSet {
     // ResultSet Functions //////////////////////////////////////////
@@ -287,62 +289,15 @@ public abstract class JDBC3ResultSet extends CoreResultSet {
      * @see java.sql.ResultSet#getDate(int)
      */
     public Date getDate(int col) throws SQLException {
-        switch (safeGetColumnType(markCol(col))) {
-            case SQLITE_NULL:
-                return null;
-
-            case SQLITE_TEXT:
-                String dateText = safeGetColumnText(col);
-                if ("".equals(dateText)) {
-                    return null;
-                }
-                try {
-                    return new Date(
-                            getConnectionConfig().getDateFormat().parse(dateText).getTime());
-                } catch (Exception e) {
-                    throw new SQLException("Error parsing date", e);
-                }
-
-            case SQLITE_FLOAT:
-                return new Date(julianDateToCalendar(safeGetDoubleCol(col)).getTimeInMillis());
-
-            default: // SQLITE_INTEGER:
-                return new Date(safeGetLongCol(col) * getConnectionConfig().getDateMultiplier());
-        }
+        return getDate(col, Calendar.getInstance());
     }
 
     /**
      * @see java.sql.ResultSet#getDate(int, java.util.Calendar)
      */
     public Date getDate(int col, Calendar cal) throws SQLException {
-        requireCalendarNotNull(cal);
-        switch (safeGetColumnType(markCol(col))) {
-            case SQLITE_NULL:
-                return null;
-
-            case SQLITE_TEXT:
-                String dateText = safeGetColumnText(col);
-                if ("".equals(dateText)) {
-                    return null;
-                }
-                try {
-                    FastDateFormat dateFormat =
-                            FastDateFormat.getInstance(
-                                    getConnectionConfig().getDateStringFormat(), cal.getTimeZone());
-
-                    return new java.sql.Date(dateFormat.parse(dateText).getTime());
-                } catch (Exception e) {
-                    throw new SQLException("Error parsing time stamp", e);
-                }
-
-            case SQLITE_FLOAT:
-                return new Date(julianDateToCalendar(safeGetDoubleCol(col), cal).getTimeInMillis());
-
-            default: // SQLITE_INTEGER:
-                cal.setTimeInMillis(
-                        safeGetLongCol(col) * getConnectionConfig().getDateMultiplier());
-                return new Date(cal.getTime().getTime());
-        }
+        OptionalLong optionalTime = getOptionalTime(col, cal);
+        return optionalTime.isPresent() ? new Date(optionalTime.getAsLong()) : null;
     }
 
     /**
@@ -453,62 +408,15 @@ public abstract class JDBC3ResultSet extends CoreResultSet {
      * @see java.sql.ResultSet#getTime(int)
      */
     public Time getTime(int col) throws SQLException {
-        switch (safeGetColumnType(markCol(col))) {
-            case SQLITE_NULL:
-                return null;
-
-            case SQLITE_TEXT:
-                String dateText = safeGetColumnText(col);
-                if ("".equals(dateText)) {
-                    return null;
-                }
-                try {
-                    return new Time(
-                            getConnectionConfig().getDateFormat().parse(dateText).getTime());
-                } catch (Exception e) {
-                    throw new SQLException("Error parsing time", e);
-                }
-
-            case SQLITE_FLOAT:
-                return new Time(julianDateToCalendar(safeGetDoubleCol(col)).getTimeInMillis());
-
-            default: // SQLITE_INTEGER
-                return new Time(safeGetLongCol(col) * getConnectionConfig().getDateMultiplier());
-        }
+        return getTime(col, Calendar.getInstance());
     }
 
     /**
      * @see java.sql.ResultSet#getTime(int, java.util.Calendar)
      */
     public Time getTime(int col, Calendar cal) throws SQLException {
-        requireCalendarNotNull(cal);
-        switch (safeGetColumnType(markCol(col))) {
-            case SQLITE_NULL:
-                return null;
-
-            case SQLITE_TEXT:
-                String dateText = safeGetColumnText(col);
-                if ("".equals(dateText)) {
-                    return null;
-                }
-                try {
-                    FastDateFormat dateFormat =
-                            FastDateFormat.getInstance(
-                                    getConnectionConfig().getDateStringFormat(), cal.getTimeZone());
-
-                    return new Time(dateFormat.parse(dateText).getTime());
-                } catch (Exception e) {
-                    throw new SQLException("Error parsing time", e);
-                }
-
-            case SQLITE_FLOAT:
-                return new Time(julianDateToCalendar(safeGetDoubleCol(col), cal).getTimeInMillis());
-
-            default: // SQLITE_INTEGER
-                cal.setTimeInMillis(
-                        safeGetLongCol(col) * getConnectionConfig().getDateMultiplier());
-                return new Time(cal.getTime().getTime());
-        }
+        OptionalLong optionalTime = getOptionalTime(col, cal);
+        return optionalTime.isPresent() ? new Time(optionalTime.getAsLong()) : null;
     }
 
     /**
@@ -529,64 +437,15 @@ public abstract class JDBC3ResultSet extends CoreResultSet {
      * @see java.sql.ResultSet#getTimestamp(int)
      */
     public Timestamp getTimestamp(int col) throws SQLException {
-        switch (safeGetColumnType(markCol(col))) {
-            case SQLITE_NULL:
-                return null;
-
-            case SQLITE_TEXT:
-                String dateText = safeGetColumnText(col);
-                if ("".equals(dateText)) {
-                    return null;
-                }
-                try {
-                    return new Timestamp(
-                            getConnectionConfig().getDateFormat().parse(dateText).getTime());
-                } catch (Exception e) {
-                    throw new SQLException("Error parsing time stamp", e);
-                }
-
-            case SQLITE_FLOAT:
-                return new Timestamp(julianDateToCalendar(safeGetDoubleCol(col)).getTimeInMillis());
-
-            default: // SQLITE_INTEGER:
-                return new Timestamp(
-                        safeGetLongCol(col) * getConnectionConfig().getDateMultiplier());
-        }
+        return getTimestamp(col, Calendar.getInstance());
     }
 
     /**
      * @see java.sql.ResultSet#getTimestamp(int, java.util.Calendar)
      */
     public Timestamp getTimestamp(int col, Calendar cal) throws SQLException {
-        requireCalendarNotNull(cal);
-        switch (safeGetColumnType(markCol(col))) {
-            case SQLITE_NULL:
-                return null;
-
-            case SQLITE_TEXT:
-                String dateText = safeGetColumnText(col);
-                if ("".equals(dateText)) {
-                    return null;
-                }
-                try {
-                    FastDateFormat dateFormat =
-                            FastDateFormat.getInstance(
-                                    getConnectionConfig().getDateStringFormat(), cal.getTimeZone());
-
-                    return new Timestamp(dateFormat.parse(dateText).getTime());
-                } catch (Exception e) {
-                    throw new SQLException("Error parsing time stamp", e);
-                }
-
-            case SQLITE_FLOAT:
-                return new Timestamp(julianDateToCalendar(safeGetDoubleCol(col)).getTimeInMillis());
-
-            default: // SQLITE_INTEGER
-                cal.setTimeInMillis(
-                        safeGetLongCol(col) * getConnectionConfig().getDateMultiplier());
-
-                return new Timestamp(cal.getTime().getTime());
-        }
+        OptionalLong optionalTime = getOptionalTime(col, cal);
+        return optionalTime.isPresent() ? new Timestamp(optionalTime.getAsLong()) : null;
     }
 
     /**
@@ -1036,6 +895,39 @@ public abstract class JDBC3ResultSet extends CoreResultSet {
      */
     public boolean rowUpdated() {
         return false;
+    }
+
+    private OptionalLong getOptionalTime(int col, Calendar cal) throws SQLException {
+        requireCalendarNotNull(cal);
+        switch (safeGetColumnType(markCol(col))) {
+            case SQLITE_NULL:
+                return OptionalLong.empty();
+
+            case SQLITE_TEXT:
+                String dateText = safeGetColumnText(col);
+                if ("".equals(dateText)) {
+                    return OptionalLong.empty();
+                }
+                try {
+                    DateTimeFormatter dateTimeFormatter =
+                            getConnectionConfig()
+                                    .getDateFormatter()
+                                    .withZone(cal.getTimeZone().toZoneId());
+                    return OptionalLong.of(
+                            Instant.from(dateTimeFormatter.parse(dateText)).toEpochMilli());
+                } catch (Exception e) {
+                    throw new SQLException("Error parsing time", e);
+                }
+
+            case SQLITE_FLOAT:
+                return OptionalLong.of(
+                        julianDateToCalendar(safeGetDoubleCol(col), cal).getTimeInMillis());
+
+            default: // SQLITE_INTEGER
+                cal.setTimeInMillis(
+                        safeGetLongCol(col) * getConnectionConfig().getDateMultiplier());
+                return OptionalLong.of(cal.getTime().getTime());
+        }
     }
 
     /** Transforms a Julian Date to java.util.Calendar object. */
