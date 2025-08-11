@@ -48,6 +48,7 @@
             <resource>
                 <directory>${basedir}</directory>
                 <targetPath>META-INF/maven/${project.groupId}/${project.artifactId}</targetPath>
+                <filtering>true</filtering>
                 <includes>
                     <include>VERSION</include>
                     <include>LICENSE*</include>
