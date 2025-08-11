@@ -16,7 +16,12 @@
 
 package org.sqlite;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.Driver;
+import java.sql.DriverManager;
+import java.sql.DriverPropertyInfo;
+import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.util.Properties;
 import org.sqlite.jdbc4.JDBC4Connection;
 import org.sqlite.util.Logger;
@@ -38,14 +43,26 @@ public class JDBC implements Driver {
      * @see java.sql.Driver#getMajorVersion()
      */
     public int getMajorVersion() {
-        return SQLiteJDBCLoader.getMajorVersion();
+        try {
+            return DriverManager.getConnection("jdbc:sqlite:")
+                    .getMetaData()
+                    .getDriverMajorVersion();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
      * @see java.sql.Driver#getMinorVersion()
      */
     public int getMinorVersion() {
-        return SQLiteJDBCLoader.getMinorVersion();
+        try {
+            return DriverManager.getConnection("jdbc:sqlite:")
+                    .getMetaData()
+                    .getDriverMinorVersion();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**

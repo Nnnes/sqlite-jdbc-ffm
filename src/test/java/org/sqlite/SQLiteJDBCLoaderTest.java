@@ -103,11 +103,6 @@ public class SQLiteJDBCLoaderTest {
     }
 
     @Test
-    public void version() {
-        assertThat(SQLiteJDBCLoader.getVersion()).isNotEqualTo("unknown");
-    }
-
-    @Test
     public void test(@TempDir Path tmpDir) throws Throwable {
         final AtomicInteger completedThreads = new AtomicInteger(0);
         ExecutorService pool = Executors.newFixedThreadPool(32);

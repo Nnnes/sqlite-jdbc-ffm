@@ -42,7 +42,7 @@
                 <directory>src/main/resources</directory>
                 <filtering>true</filtering>
                 <includes>
-                    <include>sqlite-jdbc.properties</include>
+                    <include>sqlite-jdbc-ffm.properties</include>
                 </includes>
             </resource>
             <resource>
@@ -201,7 +201,7 @@
             <version>1.4.1</version>
             <scope>test</scope>
         </dependency>
-        <!--   Required by archunit     -->
+        <!--   Required by archunit   -->
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>

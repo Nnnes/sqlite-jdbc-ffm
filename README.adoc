@@ -71,7 +71,7 @@ The SQLite library bundled with `sqlite-jdbc` includes some SQLite https://githu
 
 All uses of `long` for raw memory addresses, mostly involving `org.sqlite.core.SafeStmtPtr`, have been changed to instead use `MemorySegment`. This includes 2 package-private fields in `org.sqlite.Function` and a large number of fields and methods in `org.sqlite.core.*` classes.
 
-Many classes in package `org.sqlite.util` and methods in `org.sqlite.SQLiteJDBCLoader` related to loading native libraries have been deleted.
+Class `org.sqlite.SQLiteJDBCLoader` and many classes in package `org.sqlite.util` related to loading native libraries have been deleted.
 
 The embedded copy of Apache FastDateFormat in `org.sqlite.date` has been deleted in favor of `java.time.format.DateTimeFormatter`, which is more rigid when parsing date strings. Use `org.sqlite.SQLiteConnectionConfig#setDateStringFormat(String)` as needed.
 

@@ -38,9 +38,9 @@ public abstract class JDBC3DatabaseMetaData extends CoreDatabaseMetaData {
         try (InputStream sqliteJdbcPropStream =
                 JDBC3DatabaseMetaData.class
                         .getClassLoader()
-                        .getResourceAsStream("sqlite-jdbc.properties")) {
+                        .getResourceAsStream("sqlite-jdbc-ffm.properties")) {
             if (sqliteJdbcPropStream == null) {
-                throw new IOException("Cannot load sqlite-jdbc.properties from jar");
+                throw new IOException("Cannot load sqlite-jdbc-ffm.properties from jar");
             }
             final Properties sqliteJdbcProp = new Properties();
             sqliteJdbcProp.load(sqliteJdbcPropStream);
@@ -48,8 +48,8 @@ public abstract class JDBC3DatabaseMetaData extends CoreDatabaseMetaData {
             driverVersion = sqliteJdbcProp.getProperty("version");
         } catch (Exception e) {
             // Default values
-            driverName = "SQLite JDBC";
-            driverVersion = "3.0.0-UNKNOWN";
+            driverName = "SQLite JDBC FFM";
+            driverVersion = "0.0.0-UNKNOWN";
         }
     }
 
