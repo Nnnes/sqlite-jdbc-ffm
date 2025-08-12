@@ -1,5 +1,7 @@
 == sqlite-jdbc-ffm
 
+image:https://img.shields.io/maven-central/v/net.nnnes/sqlite-jdbc-ffm[Maven Central,link=https://central.sonatype.com/artifact/net.nnnes/sqlite-jdbc-ffm]
+
 The goal of this fork of https://github.com/xerial/sqlite-jdbc[sqlite-jdbc] is to keep the same JDBC interface and much of _(see below)_ the same Java interface as the original library but remove the set of bundled native SQLite libraries and JNI bindings, instead using the JDK 22+ https://openjdk.org/jeps/454[Foreign Function & Memory API] to communicate with an external SQLite native library.
 
 .Benefits
@@ -18,7 +20,7 @@ The goal of this fork of https://github.com/xerial/sqlite-jdbc[sqlite-jdbc] is t
 * JDK 23+
 * SQLite 3.7.13+
 ** 3.5.0 (2007-09-04) has not been tested, but likely works to some extent (if you can find a binary for your architecture).
-** 3.7.13 (2012-06-11) is the earliest version that has been tested. Many features do not work, but it is possible to read and write to databases.
+** 3.7.13 (2012-06-11) is the earliest version that has been tested. Many features do not work, but it is possible to read from and write to databases.
 ** 3.26.0+ (2018-12-01) is strongly recommended.
 ** 3.37.0+ (2021-11-27) is recommended for full feature support.
 
@@ -26,9 +28,21 @@ NOTE: These are SQLite library versions, not database versions. An SQLite librar
 
 === Usage
 
-==== Maven Central
+.Maven `pom.xml`:
+[source,xml]
+----
+<dependency>
+    <groupId>net.nnnes</groupId>
+    <artifactId>sqlite-jdbc-ffm</artifactId>
+    <version>0.1.0</version>
+</dependency>
+----
 
-Not available yet
+.Gradle `build.gradle.kts`:
+[source,kotlin]
+----
+implementation("net.nnnes:sqlite-jdbc-ffm:0.1.0")
+----
 
 ==== JDBC
 
