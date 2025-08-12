@@ -17,7 +17,7 @@ The goal of this fork of https://github.com/xerial/sqlite-jdbc[sqlite-jdbc] is t
 * May be measurably slower in some cases
 
 .Requirements
-* JDK 23+
+* JDK 22+
 * SQLite 3.7.13+
 ** 3.5.0 (2007-09-04) has not been tested, but likely works to some extent (if you can find a binary for your architecture).
 ** 3.7.13 (2012-06-11) is the earliest version that has been tested. Many features do not work, but it is possible to read from and write to databases.
