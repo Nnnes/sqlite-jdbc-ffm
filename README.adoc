@@ -26,7 +26,7 @@ The goal of this fork of https://github.com/xerial/sqlite-jdbc[sqlite-jdbc] is t
 
 NOTE: These are SQLite library versions, not database versions. An SQLite library should always be able to read a database modified by any earlier library, but may not always be able to read databases modified by newer library versions.
 
-=== Usage
+== Usage
 
 .Maven `pom.xml`:
 [source,xml]
@@ -44,11 +44,11 @@ NOTE: These are SQLite library versions, not database versions. An SQLite librar
 implementation("net.nnnes:sqlite-jdbc-ffm:0.1.0")
 ----
 
-==== JDBC
+=== JDBC
 
 See `sqlite-jdbc` for code samples. The JDBC API should be identical.
 
-==== SQLite library file
+=== SQLite library file
 
 Ready-to-use SQLite shared libraries for Windows (DLLs) are available from the official https://sqlite.org/download.html#win32[SQLite website]. Other platforms' package managers might have `sqlite3-dev` or similar available, or you may want to compile from source yourself.
 
@@ -64,7 +64,7 @@ Requirements: GCC/Clang, Make
 
 NOTE: The `sqlitejdbc.*` library files built by and distributed with `sqlite-jdbc` currently cannot be used by `sqlite-jdbc-ffm`. They contain JNI code that looks for variables and methods whose types are different in `sqlite-jdbc-ffm`. _This may change in the future._
 
-==== Loading SQLite
+=== Loading SQLite
 
 `sqlite-jdbc-ffm` uses https://docs.oracle.com/en/java/javase/23/docs/api/java.base/java/lang/foreign/SymbolLookup.html#libraryLookup(java.lang.String,java.lang.foreign.Arena)[`SymbolLookup#libraryLookup(System.mapLibraryName("sqlite3"), ...)`] internally to load the SQLite native library. Use the JVM argument
 [source]
@@ -77,27 +77,31 @@ NOTE: The SQLite library file must be named `libsqlite3.so` (Linux), `sqlite3.dl
 
 You should https://openjdk.org/jeps/472#Enabling-native-access[enable native access] for module `net.nnnes.sqlitejdbcffm` (or for `UNNAMED-MODULE` if not using JPMS). Future JDK releases will not allow you to use `sqlite-jdbc-ffm` (or `sqlite-jdbc`) without doing so.
 
-=== API differences from `sqlite-jdbc`
+== API differences from `sqlite-jdbc`
 
-The JDBC API is identical.
+* The JDBC API is identical.
 
-The SQLite library bundled with `sqlite-jdbc` includes some SQLite https://github.com/xerial/sqlite-jdbc/blob/master/src/main/ext/extension-functions.c[extension functions]. Follow the compilation instructions provided in that file if you need these. Note that https://sqlite.org/lang_mathfunc.html[many of the math functions] are present in SQLite 3.35.0+, provided it has been compiled to include them.
+=== Changed
 
-All uses of `long` for raw memory addresses, mostly involving `org.sqlite.core.SafeStmtPtr`, have been changed to instead use `MemorySegment`. This includes 2 package-private fields in `org.sqlite.Function` and a large number of fields and methods in `org.sqlite.core.*` classes.
+* All uses of `long` for raw memory addresses, mostly involving `org.sqlite.core.SafeStmtPtr`, have been changed to instead use `MemorySegment`.
+** This includes 2 package-private fields in `org.sqlite.Function` and a large number of fields and methods in `org.sqlite.core.*` classes.
 
-Class `org.sqlite.SQLiteJDBCLoader` and many classes in package `org.sqlite.util` related to loading native libraries have been deleted.
+=== Removed
 
-The embedded copy of Apache FastDateFormat in `org.sqlite.date` has been deleted in favor of `java.time.format.DateTimeFormatter`, which is more rigid when parsing date strings. Use `org.sqlite.SQLiteConnectionConfig#setDateStringFormat(String)` as needed.
+* Math and string https://github.com/xerial/sqlite-jdbc/blob/master/src/main/ext/extension-functions.c[extension functions]
+** The SQLite library bundled with `sqlite-jdbc` includes some extension functions. Note that https://sqlite.org/lang_mathfunc.html[many of the math functions] are present in SQLite 3.35.0+ if it has been compiled with `-DSQLITE_ENABLE_MATH_FUNCTIONS`.
+* `org.sqlite.SQLiteJDBCLoader`; many classes in package `org.sqlite.util`
+** These classes were mostly involved with loading native libraries.
+* `org.sqlite.date.*` (Apache FastDateFormat)
+** The copy of Apache FastDateFormat in `org.sqlite.date` has been deleted in favor of `java.time.format.DateTimeFormatter`, which is more rigid when parsing some date strings.
+** Use `org.sqlite.SQLiteConnectionConfig#setDateStringFormat(String)` as needed.
 
-=== Other notes
+== Other notes
 
-`sqlite-jdbc-ffm` passes all relevant tests included with `sqlite-jdbc` on Linux x64 and Windows x64. Some native functions have no test coverage yet.
-
-Some public methods have been added to various `org.sqlite.*` classes to avoid use of reflection that a direct rewrite of the JNI C code would have required. These have been prefixed with `_` and should not be considered stable.
-
-Future work will aim to improve performance and SQLite compatibility and reduce library size while maintaining the same level of Java API parity with `sqlite-jdbc`.
-
-Questions, bug reports, feature requests, pull requests, test results from more platforms, and performance comparisons are welcome!
+* `sqlite-jdbc-ffm` passes all relevant tests included with `sqlite-jdbc` on Linux x64 and Windows x64. Some native functions have no test coverage yet.
+* Some public methods have been added to various `org.sqlite.*` classes to avoid use of reflection that a direct rewrite of the JNI C code would have required. These have been prefixed with `_` and should not be considered stable.
+* Future work will aim to improve performance and SQLite compatibility and reduce library size while maintaining the same level of Java API parity with `sqlite-jdbc`.
+* Questions, bug reports, feature requests, pull requests, test results from more platforms, and performance comparisons are welcome!
 
 '''
 
