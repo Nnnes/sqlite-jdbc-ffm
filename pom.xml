@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>net.nnnes</groupId>
     <artifactId>sqlite-jdbc-ffm</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>0.1.0</version>
     <name>SQLite JDBC FFM</name>
     <description>SQLite JDBC FFM library</description>
     <url>https://github.com/nnnes/sqlite-jdbc-ffm</url>
